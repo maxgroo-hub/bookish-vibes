@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { BookOpen, Users, Clock, Search, Star, ArrowRight, Library, Shield, Zap } from "lucide-react";
+import ContactSection from "@/components/landing/ContactSection";
 
 const words = ["Read More.", "Learn Faster.", "Explore Freely."];
 
@@ -106,6 +107,7 @@ const Landing = () => {
             <a href="#features" className="hover:text-secondary transition-colors">Features</a>
             <a href="#stats" className="hover:text-secondary transition-colors">Stats</a>
             <a href="#testimonials" className="hover:text-secondary transition-colors">Reviews</a>
+            <a href="#contact" className="hover:text-secondary transition-colors">Contact</a>
           </div>
           <div className="flex gap-3">
             <Link to="/signin" className="brutal-btn bg-background text-foreground rounded-md text-sm font-heading">
@@ -285,6 +287,9 @@ const Landing = () => {
           </Link>
         </div>
       </section>
+
+      {/* Contact */}
+      <ContactSection />
 
       {/* Footer */}
       <footer className="py-8 px-6 brutal-border border-b-0 border-x-0">
