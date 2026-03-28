@@ -14,7 +14,7 @@ A modern library management system built with React, TypeScript, Vite, Tailwind 
     - `auth/ProtectedRoute.tsx` - Role-based route guard
     - `layout/` - DashboardLayout, AdminLayout
   - `context/AuthContext.tsx` - Supabase session sync context
-  - `hooks/` - Custom React hooks
+  - `hooks/useLibraryData.ts` - All TanStack Query data hooks (books, borrows, reservations, notifications, admin stats, members)
   - `store/index.ts` - Zustand auth + UI state
   - `lib/` - Utility functions
     - `supabase.ts` - Supabase client
@@ -49,9 +49,10 @@ Supabase powers all authentication:
 
 ### Required Supabase Setup
 
-1. Run the SQL in `supabase/migrations/001_profiles.sql` in your Supabase SQL editor
-2. Enable Google OAuth in Supabase Dashboard → Authentication → Providers → Google
-3. Add your site URL to Supabase Dashboard → Authentication → URL Configuration:
+1. Run `supabase/migrations/001_profiles.sql` in your Supabase SQL editor (profiles, triggers)
+2. Run `supabase/migrations/002_library_tables.sql` in your Supabase SQL editor (books, borrows, reservations, notifications + RLS + seed data)
+3. Enable Google OAuth in Supabase Dashboard → Authentication → Providers → Google
+4. Add your site URL to Supabase Dashboard → Authentication → URL Configuration:
    - Site URL: your Replit dev domain
    - Redirect URLs: `https://<your-domain>/auth/callback`
 

@@ -1,22 +1,32 @@
 import { motion } from "framer-motion";
 import { BookOpen, Clock, AlertTriangle, CreditCard, Star } from "lucide-react";
 import { useAuthStore } from "@/store";
-import { mockBorrows, mockBooks } from "@/lib/mockData";
 import { Link } from "react-router-dom";
+import { useMyBorrows, useMyReservations } from "@/hooks/useLibraryData";
 
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
-const stats = [
-  { label: "Borrowed", value: "2", icon: BookOpen, color: "bg-primary" },
-  { label: "Due Soon", value: "1", icon: Clock, color: "bg-accent text-accent-foreground" },
-  { label: "Reservations", value: "2", icon: Star, color: "bg-success" },
-  { label: "Fines", value: "$2.50", icon: CreditCard, color: "bg-secondary text-secondary-foreground" },
-];
-
 const DashboardHome = () => {
   const user = useAuthStore((s) => s.user);
-  const activeBorrows = mockBorrows.filter((b) => b.status === "active" || b.status === "overdue");
+  const { data: borrows = [] } = useMyBorrows();
+  const { data: reservations = [] } = useMyReservations();
+
+  const activeBorrows = borrows.filter((b) => b.status === "active" || b.status === "overdue");
+  const dueSoon = borrows.filter((b) => {
+    if (b.status !== "active") return false;
+    const days = Math.ceil((new Date(b.dueDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    return days <= 3 && days >= 0;
+  });
+  const totalFines = borrows.reduce((sum, b) => sum + (b.fineAmount || 0), 0);
+  const activeReservations = reservations.filter((r) => r.status === "pending" || r.status === "ready");
+
+  const stats = [
+    { label: "Borrowed", value: String(activeBorrows.length), icon: BookOpen, color: "bg-primary" },
+    { label: "Due Soon", value: String(dueSoon.length), icon: Clock, color: "bg-accent text-accent-foreground" },
+    { label: "Reservations", value: String(activeReservations.length), icon: Star, color: "bg-success" },
+    { label: "Fines", value: `$${totalFines.toFixed(2)}`, icon: CreditCard, color: "bg-secondary text-secondary-foreground" },
+  ];
 
   return (
     <div className="space-y-8">
@@ -54,37 +64,47 @@ const DashboardHome = () => {
       {/* Currently Borrowed */}
       <div>
         <h2 className="font-heading text-xl font-bold mb-4">Currently Borrowed</h2>
-        <div className="flex gap-4 overflow-x-auto pb-2">
-          {activeBorrows.map((b) => {
-            const daysLeft = Math.ceil((new Date(b.dueDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-            const isOverdue = daysLeft < 0;
-            return (
-              <motion.div
-                key={b.id}
-                className="brutal-card p-4 rounded-lg min-w-[260px] flex-shrink-0"
-                whileHover={{ y: -4 }}
-              >
-                <div className="w-full h-32 bg-muted brutal-border rounded-md mb-3 flex items-center justify-center">
-                  <BookOpen className="w-10 h-10 text-muted-foreground" />
-                </div>
-                <h3 className="font-heading font-bold text-sm truncate">{b.bookTitle}</h3>
-                <p className="text-xs text-muted-foreground mb-2">{b.bookAuthor}</p>
-                <div className="flex items-center justify-between text-xs font-semibold">
-                  <span className={isOverdue ? "text-destructive" : "text-foreground"}>
-                    {isOverdue ? `${Math.abs(daysLeft)} days overdue` : `${daysLeft} days left`}
-                  </span>
-                  {isOverdue && <AlertTriangle className="w-4 h-4 text-destructive" />}
-                </div>
-                <div className="w-full bg-muted h-2 rounded-full mt-2 brutal-border overflow-hidden">
-                  <div
-                    className={`h-full ${isOverdue ? "bg-destructive" : "bg-success"}`}
-                    style={{ width: `${isOverdue ? 100 : Math.max(10, ((14 - daysLeft) / 14) * 100)}%` }}
-                  />
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
+        {activeBorrows.length === 0 ? (
+          <div className="brutal-card p-8 rounded-lg text-center text-muted-foreground">
+            <BookOpen className="w-10 h-10 mx-auto mb-2 opacity-40" />
+            <p className="font-heading font-semibold">No active borrows</p>
+            <Link to="/dashboard/books" className="brutal-btn bg-primary text-primary-foreground rounded-md text-sm font-heading inline-block mt-4">
+              Browse Books
+            </Link>
+          </div>
+        ) : (
+          <div className="flex gap-4 overflow-x-auto pb-2">
+            {activeBorrows.map((b) => {
+              const daysLeft = Math.ceil((new Date(b.dueDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+              const isOverdue = daysLeft < 0;
+              return (
+                <motion.div
+                  key={b.id}
+                  className="brutal-card p-4 rounded-lg min-w-[260px] flex-shrink-0"
+                  whileHover={{ y: -4 }}
+                >
+                  <div className="w-full h-32 bg-muted brutal-border rounded-md mb-3 flex items-center justify-center">
+                    <BookOpen className="w-10 h-10 text-muted-foreground" />
+                  </div>
+                  <h3 className="font-heading font-bold text-sm truncate">{b.bookTitle}</h3>
+                  <p className="text-xs text-muted-foreground mb-2">{b.bookAuthor}</p>
+                  <div className="flex items-center justify-between text-xs font-semibold">
+                    <span className={isOverdue ? "text-destructive" : "text-foreground"}>
+                      {isOverdue ? `${Math.abs(daysLeft)} days overdue` : `${daysLeft} days left`}
+                    </span>
+                    {isOverdue && <AlertTriangle className="w-4 h-4 text-destructive" />}
+                  </div>
+                  <div className="w-full bg-muted h-2 rounded-full mt-2 brutal-border overflow-hidden">
+                    <div
+                      className={`h-full ${isOverdue ? "bg-destructive" : "bg-success"}`}
+                      style={{ width: `${isOverdue ? 100 : Math.max(10, ((14 - daysLeft) / 14) * 100)}%` }}
+                    />
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Quick actions */}

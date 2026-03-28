@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Filter, Grid, List, Star, BookOpen } from "lucide-react";
-import { mockBooks } from "@/lib/mockData";
+import { Search, Grid, List, Star, BookOpen, Loader2 } from "lucide-react";
+import { useBooks } from "@/hooks/useLibraryData";
 
 const genres = ["All", "Fiction", "Classic", "Dystopian", "Romance", "Fantasy", "Adventure", "Non-Fiction", "Sci-Fi", "Self-Help", "History"];
 
@@ -12,9 +12,10 @@ const BrowseBooks = () => {
   const [search, setSearch] = useState("");
   const [genre, setGenre] = useState("All");
   const [view, setView] = useState<"grid" | "list">("grid");
-  const [selectedBook, setSelectedBook] = useState<(typeof mockBooks)[0] | null>(null);
+  const { data: books = [], isLoading } = useBooks();
+  const [selectedBook, setSelectedBook] = useState<typeof books[0] | null>(null);
 
-  const filtered = mockBooks.filter((b) => {
+  const filtered = books.filter((b) => {
     const matchSearch = b.title.toLowerCase().includes(search.toLowerCase()) || b.author.toLowerCase().includes(search.toLowerCase());
     const matchGenre = genre === "All" || b.genre.includes(genre);
     return matchSearch && matchGenre;
@@ -51,66 +52,71 @@ const BrowseBooks = () => {
           <button
             key={g}
             onClick={() => setGenre(g)}
-            className={`brutal-btn rounded-full px-4 py-1.5 text-sm font-heading ${
-              genre === g ? "bg-accent text-accent-foreground" : "bg-background"
-            }`}
+            className={`brutal-btn rounded-full px-4 py-1.5 text-sm font-heading ${genre === g ? "bg-accent text-accent-foreground" : "bg-background"}`}
           >
             {g}
           </button>
         ))}
       </div>
 
-      {/* Books grid */}
-      <motion.div
-        className={view === "grid" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" : "space-y-3"}
-        variants={container}
-        initial="hidden"
-        animate="show"
-        key={`${genre}-${search}-${view}`}
-      >
-        {filtered.map((book) => (
-          <motion.div
-            key={book.id}
-            variants={item}
-            className={`brutal-card rounded-lg cursor-pointer ${view === "list" ? "flex gap-4 p-4" : "p-4"}`}
-            onClick={() => setSelectedBook(book)}
-            whileHover={{ y: -4 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <div className={`bg-muted brutal-border rounded-md flex items-center justify-center ${view === "list" ? "w-20 h-28 flex-shrink-0" : "w-full h-48 mb-3"}`}>
-              <BookOpen className="w-8 h-8 text-muted-foreground" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-heading font-bold truncate">{book.title}</h3>
-              <p className="text-sm text-muted-foreground">{book.author}</p>
-              <div className="flex flex-wrap gap-1 mt-2">
-                {book.genre.map((g) => (
-                  <span key={g} className="bg-muted px-2 py-0.5 text-xs font-bold rounded-full brutal-border">{g}</span>
-                ))}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <motion.div
+          className={view === "grid" ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" : "space-y-3"}
+          variants={container}
+          initial="hidden"
+          animate="show"
+          key={`${genre}-${search}-${view}`}
+        >
+          {filtered.map((book) => (
+            <motion.div
+              key={book.id}
+              variants={item}
+              className={`brutal-card rounded-lg cursor-pointer ${view === "list" ? "flex gap-4 p-4" : "p-4"}`}
+              onClick={() => setSelectedBook(book)}
+              whileHover={{ y: -4 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <div className={`bg-muted brutal-border rounded-md flex items-center justify-center ${view === "list" ? "w-20 h-28 flex-shrink-0" : "w-full h-48 mb-3"}`}>
+                {book.coverUrl ? (
+                  <img src={book.coverUrl} alt={book.title} className="w-full h-full object-cover rounded-md" />
+                ) : (
+                  <BookOpen className="w-8 h-8 text-muted-foreground" />
+                )}
               </div>
-              <div className="flex items-center justify-between mt-3">
-                <div className="flex items-center gap-1">
-                  <Star className="w-4 h-4 fill-primary text-primary" />
-                  <span className="text-sm font-bold">{book.rating}</span>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-heading font-bold truncate">{book.title}</h3>
+                <p className="text-sm text-muted-foreground">{book.author}</p>
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {book.genre.map((g) => (
+                    <span key={g} className="bg-muted px-2 py-0.5 text-xs font-bold rounded-full brutal-border">{g}</span>
+                  ))}
                 </div>
-                <span className={book.availableCopies > 0 ? "badge-available" : "badge-unavailable"}>
-                  {book.availableCopies > 0 ? "Available" : "Unavailable"}
-                </span>
+                <div className="flex items-center justify-between mt-3">
+                  <div className="flex items-center gap-1">
+                    <Star className="w-4 h-4 fill-primary text-primary" />
+                    <span className="text-sm font-bold">{book.rating}</span>
+                  </div>
+                  <span className={book.availableCopies > 0 ? "badge-available" : "badge-unavailable"}>
+                    {book.availableCopies > 0 ? "Available" : "Unavailable"}
+                  </span>
+                </div>
+                <button
+                  className={`mt-3 brutal-btn w-full rounded-md text-sm font-heading ${book.availableCopies > 0 ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"}`}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {book.availableCopies > 0 ? "Borrow" : "Reserve"}
+                </button>
               </div>
-              <button
-                className={`mt-3 brutal-btn w-full rounded-md text-sm font-heading ${
-                  book.availableCopies > 0 ? "bg-primary text-primary-foreground" : "bg-accent text-accent-foreground"
-                }`}
-                onClick={(e) => { e.stopPropagation(); }}
-              >
-                {book.availableCopies > 0 ? "Borrow" : "Reserve"}
-              </button>
-            </div>
-          </motion.div>
-        ))}
-      </motion.div>
+            </motion.div>
+          ))}
+        </motion.div>
+      )}
 
-      {filtered.length === 0 && (
+      {!isLoading && filtered.length === 0 && (
         <div className="text-center py-20">
           <BookOpen className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
           <h3 className="font-heading text-xl font-bold">No books found</h3>
@@ -141,8 +147,12 @@ const BrowseBooks = () => {
               </div>
               <button onClick={() => setSelectedBook(null)} className="brutal-btn bg-background rounded-md px-2 py-1 text-sm">✕</button>
             </div>
-            <div className="w-full h-48 bg-muted brutal-border rounded-md flex items-center justify-center mb-4">
-              <BookOpen className="w-12 h-12 text-muted-foreground" />
+            <div className="w-full h-48 bg-muted brutal-border rounded-md flex items-center justify-center mb-4 overflow-hidden">
+              {selectedBook.coverUrl ? (
+                <img src={selectedBook.coverUrl} alt={selectedBook.title} className="w-full h-full object-cover" />
+              ) : (
+                <BookOpen className="w-12 h-12 text-muted-foreground" />
+              )}
             </div>
             <p className="text-sm mb-4">{selectedBook.description}</p>
             <div className="grid grid-cols-2 gap-3 text-sm mb-4">
