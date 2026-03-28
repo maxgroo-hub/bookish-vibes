@@ -139,3 +139,12 @@
     cursor: none !important;
   }
 }
+
+/* DomeGallery — CSS-only grayscale hover (no React re-renders) */
+.dome-grayscale {
+  filter: grayscale(100%) brightness(0.8);
+  transition: filter 0.3s ease;
+}
+.dome-grayscale.dome-hovered {
+  filter: grayscale(0%) brightness(1.05);
+}

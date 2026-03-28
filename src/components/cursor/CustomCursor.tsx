@@ -4,6 +4,7 @@ import { useThemeStore } from "@/store/themeStore";
 const CustomCursor = () => {
   const outerRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
+  const colorRef = useRef<string>('#FFE500');
   const currentTheme = useThemeStore((s) => s.currentTheme);
 
   useEffect(() => {
@@ -13,9 +14,7 @@ const CustomCursor = () => {
 
     const mouse = { x: 0, y: 0 };
     const outerPos = { x: 0, y: 0 };
-
-    const getCursorColor = () =>
-      getComputedStyle(document.body).getPropertyValue('--t-cursor-color').trim() || '#FFE500';
+    let lastInteractive = false;
 
     const onMove = (e: MouseEvent) => {
       mouse.x = e.clientX;
@@ -26,9 +25,11 @@ const CustomCursor = () => {
       }
 
       const el = e.target as HTMLElement;
-      const interactive = el.closest('a, button, [role="button"], input, textarea, select, label, [data-cursor-hover]');
-      if (outerRef.current) {
-        const color = getCursorColor();
+      const interactive = !!el.closest('a, button, [role="button"], input, textarea, select, label, [data-cursor-hover]');
+
+      if (outerRef.current && interactive !== lastInteractive) {
+        lastInteractive = interactive;
+        const color = colorRef.current;
         if (interactive) {
           outerRef.current.style.width = '48px';
           outerRef.current.style.height = '48px';
@@ -91,11 +92,14 @@ const CustomCursor = () => {
     };
   }, []);
 
-  // Update inner dot color when theme changes
   useEffect(() => {
     const color = getComputedStyle(document.body).getPropertyValue('--t-cursor-color').trim() || '#FFE500';
+    colorRef.current = color;
     if (innerRef.current) {
       innerRef.current.style.backgroundColor = color;
+    }
+    if (outerRef.current) {
+      outerRef.current.style.borderColor = color;
     }
   }, [currentTheme]);
 

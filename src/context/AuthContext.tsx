@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { getProfile, AppUser } from "@/lib/auth";
@@ -23,7 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const setUser = useAuthStore((s) => s.setUser);
   const logout = useAuthStore((s) => s.logout);
 
-  const syncProfile = async (user: User | null) => {
+  const syncProfile = useCallback(async (user: User | null) => {
     if (!user) {
       logout();
       setSupabaseUser(null);
@@ -46,21 +46,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
       setUser(fallbackUser);
     }
-  };
+  }, [setUser, logout]);
 
   useEffect(() => {
+    let didSetLoading = false;
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      syncProfile(session?.user ?? null).finally(() => setLoading(false));
+      syncProfile(session?.user ?? null).finally(() => {
+        if (!didSetLoading) {
+          didSetLoading = true;
+          setLoading(false);
+        }
+      });
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      syncProfile(session?.user ?? null);
+      syncProfile(session?.user ?? null).finally(() => {
+        if (!didSetLoading) {
+          didSetLoading = true;
+          setLoading(false);
+        }
+      });
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [syncProfile]);
 
   return (
     <AuthContext.Provider value={{ session, supabaseUser, loading }}>

@@ -1,31 +1,30 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { supabase } from "@/lib/supabase";
+import type { AppUser } from "@/lib/auth";
+
+export type { AppUser };
 
 interface AuthStore {
-  user: {
-    id: string;
-    fullName: string;
-    email: string;
-    role: "member" | "admin";
-    avatarUrl?: string;
-    membershipType: "basic" | "premium" | "vip";
-    isGuest?: boolean;
-  } | null;
+  user: AppUser | null;
   isAuthenticated: boolean;
-  setUser: (user: AuthStore["user"]) => void;
+  setUser: (user: AppUser | null) => void;
   logout: () => void;
   loginAsGuest: (role: "member" | "admin") => void;
 }
 
 export const useAuthStore = create<AuthStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       isAuthenticated: false,
       setUser: (user) => set({ user, isAuthenticated: !!user }),
       logout: () => {
-        supabase.auth.signOut();
+        const user = get().user;
+        if (user && !user.isGuest) {
+          import("@/lib/supabase").then(({ supabase }) => {
+            supabase.auth.signOut();
+          });
+        }
         set({ user: null, isAuthenticated: false });
       },
       loginAsGuest: (role) => set({

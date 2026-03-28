@@ -46,8 +46,8 @@ export function DomeGallery({
   dragDampening = 2,
   grayscale = true,
 }: DomeGalleryProps) {
-  const [rotY, setRotY] = useState(0);
   const [hoverCard, setHoverCard] = useState<HoverCard | null>(null);
+  const sphereRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
   const lastX = useRef(0);
   const rotYRef = useRef(0);
@@ -64,7 +64,9 @@ export function DomeGallery({
       if (!isDragging.current) {
         velocityRef.current *= 0.97;
         rotYRef.current += velocityRef.current + 0.1;
-        setRotY(rotYRef.current);
+      }
+      if (sphereRef.current) {
+        sphereRef.current.style.transform = `rotateY(${rotYRef.current}deg)`;
       }
       if (running) rafRef.current = requestAnimationFrame(loop);
     };
@@ -86,7 +88,6 @@ export function DomeGallery({
     const dx = e.clientX - lastX.current;
     rotYRef.current += dx / dragDampening;
     velocityRef.current = dx / dragDampening;
-    setRotY(rotYRef.current);
     lastX.current = e.clientX;
   }, [dragDampening]);
 
@@ -105,13 +106,11 @@ export function DomeGallery({
     const dx = e.touches[0].clientX - lastX.current;
     rotYRef.current += dx / dragDampening;
     velocityRef.current = dx / dragDampening;
-    setRotY(rotYRef.current);
     lastX.current = e.touches[0].clientX;
   }, [dragDampening]);
 
   return (
     <div className="relative w-full h-full">
-      {/* Perspective + drag layer */}
       <div
         className="absolute inset-0 cursor-grab active:cursor-grabbing select-none"
         style={{ perspective: "900px" }}
@@ -123,15 +122,13 @@ export function DomeGallery({
         onTouchMove={onTouchMove}
         onTouchEnd={onMouseUp}
       >
-        {/* Rotating sphere */}
         <div
+          ref={sphereRef}
           className="w-full h-full"
-          style={{ transformStyle: "preserve-3d", transform: `rotateY(${rotY}deg)` }}
+          style={{ transformStyle: "preserve-3d", willChange: "transform" }}
         >
           {tiled.map((item, i) => {
             const { xRot, yRot } = positions[i];
-            const isHovered = hoverCard?.item.title === item.title && hoverCard?.item.author === item.author;
-
             return (
               <div
                 key={`${item.title}-${i}`}
@@ -146,18 +143,26 @@ export function DomeGallery({
                   transformStyle: "preserve-3d",
                   transform: `rotateY(${yRot}deg) rotateX(${xRot}deg) translateZ(${radius}px)`,
                   backfaceVisibility: "hidden",
-                  transition: "filter 0.3s ease",
-                  filter: grayscale && !isHovered ? "grayscale(100%) brightness(0.8)" : "grayscale(0%) brightness(1.05)",
+                  willChange: "filter",
                 }}
+                className={`dome-tile${grayscale ? " dome-grayscale" : ""}`}
                 onMouseEnter={(e) => {
                   if (isDragging.current) return;
+                  (e.currentTarget as HTMLElement).classList.add("dome-hovered");
                   setHoverCard({ item, x: e.clientX, y: e.clientY });
                 }}
                 onMouseMove={(e) => {
                   if (isDragging.current) { setHoverCard(null); return; }
-                  setHoverCard({ item, x: e.clientX, y: e.clientY });
+                  setHoverCard((prev) =>
+                    prev?.item.title === item.title && prev?.item.author === item.author
+                      ? { ...prev, x: e.clientX, y: e.clientY }
+                      : { item, x: e.clientX, y: e.clientY }
+                  );
                 }}
-                onMouseLeave={() => setHoverCard(null)}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).classList.remove("dome-hovered");
+                  setHoverCard(null);
+                }}
               >
                 <div className={`${item.color} w-full h-full brutal-border rounded-md overflow-hidden relative cursor-pointer`}>
                   <img
@@ -165,6 +170,7 @@ export function DomeGallery({
                     alt={item.title}
                     draggable={false}
                     className="w-full h-full object-cover opacity-80"
+                    loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent flex flex-col justify-end p-1.5">
                     <p className="text-white font-heading font-black text-[9px] leading-tight line-clamp-2">{item.title}</p>
@@ -176,12 +182,10 @@ export function DomeGallery({
         </div>
       </div>
 
-      {/* Hint label */}
       <p className="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs text-muted-foreground font-body opacity-50 select-none pointer-events-none z-10">
         drag to rotate · hover to preview
       </p>
 
-      {/* Hover card — fixed to viewport, not clipped by overflow */}
       <AnimatePresence>
         {hoverCard && (
           <motion.div
