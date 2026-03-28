@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { supabase } from "@/lib/supabase";
 
 interface AuthStore {
   user: {
@@ -23,7 +24,10 @@ export const useAuthStore = create<AuthStore>()(
       user: null,
       isAuthenticated: false,
       setUser: (user) => set({ user, isAuthenticated: !!user }),
-      logout: () => set({ user: null, isAuthenticated: false }),
+      logout: () => {
+        supabase.auth.signOut();
+        set({ user: null, isAuthenticated: false });
+      },
       loginAsGuest: (role) => set({
         user: {
           id: `guest-${role}`,

@@ -5,6 +5,8 @@ import { Library, Mail, ArrowLeft } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "@/components/ui/sonner";
+import { sendPasswordReset } from "@/lib/auth";
 
 const schema = z.object({
   email: z.string().email("Invalid email address"),
@@ -13,13 +15,13 @@ type FormData = z.infer<typeof schema>;
 
 const ResetPassword = () => {
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(60);
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, getValues, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = (data: FormData) => {
-    console.log("Reset:", data);
+  const startCountdown = () => {
     setSent(true);
     const interval = setInterval(() => {
       setCountdown(prev => {
@@ -27,6 +29,37 @@ const ResetPassword = () => {
         return prev - 1;
       });
     }, 1000);
+  };
+
+  const onSubmit = async (data: FormData) => {
+    setLoading(true);
+    try {
+      await sendPasswordReset(data.email);
+      startCountdown();
+      toast.success("Password reset email sent!");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to send reset email";
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    const email = getValues("email");
+    if (!email) return;
+    setLoading(true);
+    try {
+      await sendPasswordReset(email);
+      setCountdown(60);
+      startCountdown();
+      toast.success("Reset email resent!");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to resend";
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -56,8 +89,12 @@ const ResetPassword = () => {
                   </div>
                   {errors.email && <p className="text-destructive text-sm mt-1 font-semibold">{errors.email.message}</p>}
                 </div>
-                <button type="submit" className="brutal-btn w-full bg-primary text-primary-foreground rounded-md font-heading text-lg">
-                  Send Reset Link
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="brutal-btn w-full bg-primary text-primary-foreground rounded-md font-heading text-lg disabled:opacity-60"
+                >
+                  {loading ? "Sending..." : "Send Reset Link"}
                 </button>
               </form>
             </>
@@ -74,8 +111,12 @@ const ResetPassword = () => {
                 </p>
               )}
               {countdown === 0 && (
-                <button onClick={() => { setSent(false); setCountdown(60); }} className="brutal-btn bg-primary text-primary-foreground rounded-md font-heading text-sm">
-                  Resend Email
+                <button
+                  onClick={handleResend}
+                  disabled={loading}
+                  className="brutal-btn bg-primary text-primary-foreground rounded-md font-heading text-sm disabled:opacity-60"
+                >
+                  {loading ? "Sending..." : "Resend Email"}
                 </button>
               )}
             </div>

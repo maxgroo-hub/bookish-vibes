@@ -1,17 +1,26 @@
 # LibraVault
 
-A modern library management system built with React, TypeScript, Vite, Tailwind CSS, and shadcn/ui components.
+A modern library management system built with React, TypeScript, Vite, Tailwind CSS, shadcn/ui, and Supabase.
 
 ## Project Structure
 
 - `src/` - Main source code
-  - `App.tsx` - Root component with routing
+  - `App.tsx` - Root component with routing and protected routes
   - `pages/` - Page components
+    - `public/` - Landing, SignIn, SignUp, ResetPassword, AuthCallback
+    - `dashboard/` - Member dashboard pages
+    - `admin/` - Admin panel pages
   - `components/` - Reusable UI components
+    - `auth/ProtectedRoute.tsx` - Role-based route guard
+    - `layout/` - DashboardLayout, AdminLayout
+  - `context/AuthContext.tsx` - Supabase session sync context
   - `hooks/` - Custom React hooks
-  - `store/` - Zustand state management
+  - `store/index.ts` - Zustand auth + UI state
   - `lib/` - Utility functions
+    - `supabase.ts` - Supabase client
+    - `auth.ts` - Auth helper functions (signIn, signUp, Google, reset)
 - `public/` - Static assets
+- `supabase/migrations/` - SQL migration files
 
 ## Tech Stack
 
@@ -21,10 +30,41 @@ A modern library management system built with React, TypeScript, Vite, Tailwind 
 - **shadcn/ui** (Radix UI) for UI components
 - **React Router v6** for routing
 - **TanStack Query** for data fetching
-- **Zustand** for state management
+- **Zustand** for state management (persisted in localStorage)
 - **Framer Motion** for animations
 - **Recharts** for charts
 - **React Hook Form** + Zod for forms
+- **Supabase** for auth and database backend
+
+## Authentication
+
+Supabase powers all authentication:
+- **Email/password** sign in and sign up
+- **Google OAuth** (requires Google provider enabled in Supabase dashboard)
+- **Password reset** via email link
+- **Role-based access**: `member` (user dashboard) and `admin` (admin panel)
+- **Guest login** still available for demo purposes
+- Protected routes redirect unauthenticated users to `/signin`
+- Admins trying to access `/dashboard` are redirected to `/admin` and vice versa
+
+### Required Supabase Setup
+
+1. Run the SQL in `supabase/migrations/001_profiles.sql` in your Supabase SQL editor
+2. Enable Google OAuth in Supabase Dashboard → Authentication → Providers → Google
+3. Add your site URL to Supabase Dashboard → Authentication → URL Configuration:
+   - Site URL: your Replit dev domain
+   - Redirect URLs: `https://<your-domain>/auth/callback`
+
+### Admin Code
+
+To register as admin, users must enter an admin code. Default: `LIBRAVAULT_ADMIN`
+Override by setting the `VITE_ADMIN_CODE` secret.
+
+## Environment Variables
+
+- `VITE_SUPABASE_URL` - Supabase project URL
+- `VITE_SUPABASE_ANON_KEY` - Supabase anon/public key
+- `VITE_ADMIN_CODE` - (optional) Admin registration code, defaults to `LIBRAVAULT_ADMIN`
 
 ## Running the App
 
