@@ -5,8 +5,7 @@ export type ThemeKey =
   | 'neo-brutalist'
   | 'midnight-hacker'
   | 'vaporwave-dreams'
-  | 'pastel-riot'
-  | 'ghost-protocol';
+  | 'pastel-riot';
 
 export interface ThemeConfig {
   key: ThemeKey;
@@ -58,14 +57,6 @@ export const THEMES: ThemeConfig[] = [
     colors: { bg: '#FFF5F7', accent: '#FFB3C6', sidebar: '#FFB3C6', text: '#2D0A1F', border: '#2D0A1F', accent2: '#C8B6FF', accent3: '#B8F0D0' },
     fontLabel: 'Nunito',
   },
-  {
-    key: 'ghost-protocol',
-    name: 'Ghost Protocol',
-    mode: 'light',
-    description: 'Ultra minimal, grayscale brutalism',
-    colors: { bg: '#FFFFFF', accent: '#111111', sidebar: '#111111', text: '#111111', border: '#111111', accent2: '#555555', accent3: '#888888' },
-    fontLabel: 'Playfair Display',
-  },
 ];
 
 const THEME_FONTS: Record<ThemeKey, string> = {
@@ -73,7 +64,6 @@ const THEME_FONTS: Record<ThemeKey, string> = {
   'midnight-hacker': 'JetBrains+Mono:wght@400;600;700;800',
   'vaporwave-dreams': 'Orbitron:wght@400;600;700;900&family=Inter:wght@400;500;600',
   'pastel-riot': 'Nunito:wght@400;600;700;800;900',
-  'ghost-protocol': 'Playfair+Display:ital,wght@0,400;0,700;0,900;1,400',
 };
 
 function applyThemeToDOM(theme: ThemeKey) {
@@ -112,7 +102,12 @@ export const useThemeStore = create<ThemeStore>()(
         setTimeout(() => set({ isTransitioning: false }), 350);
       },
       initTheme: () => {
-        const { currentTheme } = get();
+        let { currentTheme } = get();
+        const validKeys = THEMES.map((t) => t.key);
+        if (!validKeys.includes(currentTheme)) {
+          currentTheme = 'neo-brutalist';
+          set({ currentTheme });
+        }
         document.body.classList.add('theme-initializing');
         applyThemeToDOM(currentTheme);
         requestAnimationFrame(() => {

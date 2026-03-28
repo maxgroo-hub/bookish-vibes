@@ -204,47 +204,6 @@ body.theme-pastel-riot {
   --font-body: 'Nunito', sans-serif;
 }
 
-/* ─── Theme 5: Ghost Protocol (LIGHT) ───────────────────────── */
-body.theme-ghost-protocol {
-  --background: 0 0% 100%;
-  --foreground: 0 0% 7%;
-  --card: 0 0% 100%;
-  --card-foreground: 0 0% 7%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 7%;
-  --primary: 0 0% 7%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 0 0% 33%;
-  --secondary-foreground: 0 0% 100%;
-  --muted: 0 0% 94%;
-  --muted-foreground: 0 0% 53%;
-  --accent: 0 0% 53%;
-  --accent-foreground: 0 0% 100%;
-  --destructive: 0 0% 7%;
-  --destructive-foreground: 0 0% 100%;
-  --success: 0 0% 20%;
-  --success-foreground: 0 0% 100%;
-  --border: 0 0% 7%;
-  --input: 0 0% 7%;
-  --ring: 0 0% 27%;
-
-  --t-sidebar-bg: #111111;
-  --t-sidebar-text: #FFFFFF;
-  --t-sidebar-active-bg: #FFFFFF;
-  --t-sidebar-active-text: #111111;
-  --t-sidebar-hover: #222222;
-  --t-navbar-bg: #FFFFFF;
-  --t-shadow-color: #111111;
-  --t-cursor-color: #111111;
-  --t-border-width: 3px;
-
-  --shadow-brutal: 4px 4px 0px var(--t-shadow-color);
-  --shadow-brutal-lg: 6px 6px 0px var(--t-shadow-color);
-  --shadow-brutal-hover: 8px 8px 0px var(--t-shadow-color);
-
-  --font-heading: 'Playfair Display', serif;
-  --font-body: Georgia, serif;
-}
 
 /* ─── Scrollbar theming ──────────────────────────────────────── */
 body.theme-neo-brutalist ::-webkit-scrollbar-track { background: #F5F5F5; }
@@ -255,8 +214,6 @@ body.theme-vaporwave-dreams ::-webkit-scrollbar-track { background: #1A0533; }
 body.theme-vaporwave-dreams ::-webkit-scrollbar-thumb { background: #F72585; }
 body.theme-pastel-riot ::-webkit-scrollbar-track { background: #FFF0F5; }
 body.theme-pastel-riot ::-webkit-scrollbar-thumb { background: #FFB3C6; }
-body.theme-ghost-protocol ::-webkit-scrollbar-track { background: #F0F0F0; }
-body.theme-ghost-protocol ::-webkit-scrollbar-thumb { background: #111111; }
 
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-thumb { border-radius: 0; }
