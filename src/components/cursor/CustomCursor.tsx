@@ -1,50 +1,66 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 const CustomCursor = () => {
   const outerRef = useRef<HTMLDivElement>(null);
   const innerRef = useRef<HTMLDivElement>(null);
-  const [isHovering, setIsHovering] = useState(false);
-  const [isClicking, setIsClicking] = useState(false);
-  const [isTouchDevice, setIsTouchDevice] = useState(false);
-  const mouse = useRef({ x: 0, y: 0 });
-  const outerPos = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
-    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-      setIsTouchDevice(true);
-      return;
-    }
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) return;
+
     document.documentElement.classList.add('custom-cursor-active');
 
+    const mouse = { x: 0, y: 0 };
+    const outerPos = { x: 0, y: 0 };
+
     const onMove = (e: MouseEvent) => {
-      mouse.current = { x: e.clientX, y: e.clientY };
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+
       if (innerRef.current) {
-        innerRef.current.style.left = `${e.clientX}px`;
-        innerRef.current.style.top = `${e.clientY}px`;
+        innerRef.current.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+      }
+
+      const el = e.target as HTMLElement;
+      const interactive = el.closest('a, button, [role="button"], input, textarea, select, label, [data-cursor-hover]');
+      if (outerRef.current) {
+        if (interactive) {
+          outerRef.current.style.width = '48px';
+          outerRef.current.style.height = '48px';
+          outerRef.current.style.backgroundColor = 'hsl(50, 100%, 50%)';
+          outerRef.current.style.opacity = '0.6';
+        } else {
+          outerRef.current.style.width = '32px';
+          outerRef.current.style.height = '32px';
+          outerRef.current.style.backgroundColor = 'transparent';
+          outerRef.current.style.opacity = '1';
+        }
       }
     };
 
-    const onDown = () => setIsClicking(true);
-    const onUp = () => setIsClicking(false);
-
-    const checkHover = (e: MouseEvent) => {
-      const el = e.target as HTMLElement;
-      const interactive = el.closest('a, button, [role="button"], input, textarea, select, label, [data-cursor-hover]');
-      setIsHovering(!!interactive);
+    const onDown = () => {
+      if (innerRef.current) {
+        innerRef.current.style.width = '16px';
+        innerRef.current.style.height = '16px';
+      }
     };
 
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mousemove", checkHover);
-    window.addEventListener("mousedown", onDown);
-    window.addEventListener("mouseup", onUp);
+    const onUp = () => {
+      if (innerRef.current) {
+        innerRef.current.style.width = '8px';
+        innerRef.current.style.height = '8px';
+      }
+    };
+
+    window.addEventListener("mousemove", onMove, { passive: true });
+    window.addEventListener("mousedown", onDown, { passive: true });
+    window.addEventListener("mouseup", onUp, { passive: true });
 
     let raf: number;
     const lerp = () => {
-      outerPos.current.x += (mouse.current.x - outerPos.current.x) * 0.15;
-      outerPos.current.y += (mouse.current.y - outerPos.current.y) * 0.15;
+      outerPos.x += (mouse.x - outerPos.x) * 0.15;
+      outerPos.y += (mouse.y - outerPos.y) * 0.15;
       if (outerRef.current) {
-        outerRef.current.style.left = `${outerPos.current.x}px`;
-        outerRef.current.style.top = `${outerPos.current.y}px`;
+        outerRef.current.style.transform = `translate(${outerPos.x}px, ${outerPos.y}px)`;
       }
       raf = requestAnimationFrame(lerp);
     };
@@ -53,33 +69,38 @@ const CustomCursor = () => {
     return () => {
       document.documentElement.classList.remove('custom-cursor-active');
       window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mousemove", checkHover);
       window.removeEventListener("mousedown", onDown);
       window.removeEventListener("mouseup", onUp);
       cancelAnimationFrame(raf);
     };
   }, []);
 
-  if (isTouchDevice) return null;
-
   return (
     <>
       <div
         ref={outerRef}
-        className="fixed pointer-events-none z-[9999] -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-foreground transition-all duration-150"
+        className="fixed pointer-events-none z-[9999] rounded-full border-2 border-foreground transition-[width,height,background-color,opacity] duration-150"
         style={{
-          width: isHovering ? 48 : 32,
-          height: isHovering ? 48 : 32,
-          backgroundColor: isHovering ? 'hsl(50, 100%, 50%)' : 'transparent',
-          opacity: isHovering ? 0.6 : 1,
+          width: 32,
+          height: 32,
+          top: 0,
+          left: 0,
+          marginLeft: '-16px',
+          marginTop: '-16px',
+          willChange: 'transform',
         }}
       />
       <div
         ref={innerRef}
-        className="fixed pointer-events-none z-[9999] -translate-x-1/2 -translate-y-1/2 rounded-full bg-foreground transition-all duration-100"
+        className="fixed pointer-events-none z-[9999] rounded-full bg-foreground transition-[width,height] duration-100"
         style={{
-          width: isClicking ? 16 : 8,
-          height: isClicking ? 16 : 8,
+          width: 8,
+          height: 8,
+          top: 0,
+          left: 0,
+          marginLeft: '-4px',
+          marginTop: '-4px',
+          willChange: 'transform',
         }}
       />
     </>
