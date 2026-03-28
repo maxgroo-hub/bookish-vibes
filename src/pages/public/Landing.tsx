@@ -3,6 +3,13 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { BookOpen, Users, Clock, Search, Star, ArrowRight, Library, Shield, Zap } from "lucide-react";
 import ContactSection from "@/components/landing/ContactSection";
+import {
+  PartnersSection,
+  GenreExplorerSection,
+  NewArrivalsSection,
+  EventsSection,
+  DigitalLibrarySection,
+} from "@/components/landing/LandingSections";
 
 const words = ["Read More.", "Learn Faster.", "Explore Freely."];
 
@@ -224,6 +231,12 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Genre Explorer */}
+      <GenreExplorerSection />
+
+      {/* New Arrivals */}
+      <NewArrivalsSection />
+
       {/* Stats */}
       <section id="stats" className="py-20 px-6 bg-primary">
         <div className="container mx-auto">
@@ -247,6 +260,9 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Events & Programs */}
+      <EventsSection />
+
       {/* Testimonials Marquee */}
       <section id="testimonials" className="py-20 px-6 overflow-hidden">
         <h2 className="font-heading text-4xl md:text-5xl font-black text-center mb-16">
@@ -264,6 +280,12 @@ const Landing = () => {
           </div>
         </div>
       </section>
+
+      {/* Partners & Sponsors */}
+      <PartnersSection />
+
+      {/* Digital Library Preview */}
+      <DigitalLibrarySection />
 
       {/* CTA */}
       <section className="py-20 px-6 bg-primary">
