@@ -4,6 +4,12 @@ import {
   BookOpen, Headphones, Tablet, ArrowRight, Calendar,
   Clock, MapPin, Users, Sparkles, Star,
 } from "lucide-react";
+import {
+  PreviewLinkCard,
+  PreviewLinkCardTrigger,
+  PreviewLinkCardContent,
+  PreviewLinkCardImage,
+} from "@/components/animate-ui/components/radix/preview-link-card";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 32 },
@@ -78,18 +84,18 @@ export const PartnersSection = () => (
    2. GENRE EXPLORER GRID
 ───────────────────────────────────────────────────────────── */
 const GENRES = [
-  { name: "Fiction",        count: "2,340 books", color: "bg-primary",   textColor: "text-primary-foreground",   rotate: -2 },
-  { name: "Sci-Fi",         count: "1,120 books", color: "bg-secondary", textColor: "text-secondary-foreground", rotate: 1  },
-  { name: "History",        count: "980 books",   color: "bg-accent",    textColor: "text-accent-foreground",    rotate: -1 },
-  { name: "Mystery",        count: "870 books",   color: "bg-success",   textColor: "text-success-foreground",   rotate: 2  },
-  { name: "Romance",        count: "1,450 books", color: "bg-primary",   textColor: "text-primary-foreground",   rotate: 1  },
-  { name: "Biography",      count: "640 books",   color: "bg-foreground","textColor": "text-background",         rotate: -2 },
-  { name: "Children's",     count: "760 books",   color: "bg-secondary", textColor: "text-secondary-foreground", rotate: 1  },
-  { name: "Self-Help",      count: "530 books",   color: "bg-accent",    textColor: "text-accent-foreground",    rotate: -1 },
-  { name: "Fantasy",        count: "1,200 books", color: "bg-success",   textColor: "text-success-foreground",   rotate: 2  },
-  { name: "Thriller",       count: "890 books",   color: "bg-primary",   textColor: "text-primary-foreground",   rotate: -1 },
-  { name: "Poetry",         count: "310 books",   color: "bg-secondary", textColor: "text-secondary-foreground", rotate: 1  },
-  { name: "Technology",     count: "720 books",   color: "bg-foreground","textColor": "text-background",         rotate: -2 },
+  { name: "Fiction",    count: "2,340 books", color: "bg-primary",   textColor: "text-primary-foreground",   rotate: -2, imageUrl: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=400&q=80" },
+  { name: "Sci-Fi",    count: "1,120 books", color: "bg-secondary", textColor: "text-secondary-foreground", rotate: 1,  imageUrl: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&q=80" },
+  { name: "History",   count: "980 books",   color: "bg-accent",    textColor: "text-accent-foreground",    rotate: -1, imageUrl: "https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=400&q=80" },
+  { name: "Mystery",   count: "870 books",   color: "bg-success",   textColor: "text-success-foreground",   rotate: 2,  imageUrl: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&q=80" },
+  { name: "Romance",   count: "1,450 books", color: "bg-primary",   textColor: "text-primary-foreground",   rotate: 1,  imageUrl: "https://images.unsplash.com/photo-1474552226712-ac0f0961a954?w=400&q=80" },
+  { name: "Biography", count: "640 books",   color: "bg-foreground", textColor: "text-background",          rotate: -2, imageUrl: "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=400&q=80" },
+  { name: "Children's",count: "760 books",   color: "bg-secondary", textColor: "text-secondary-foreground", rotate: 1,  imageUrl: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&q=80" },
+  { name: "Self-Help", count: "530 books",   color: "bg-accent",    textColor: "text-accent-foreground",    rotate: -1, imageUrl: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400&q=80" },
+  { name: "Fantasy",   count: "1,200 books", color: "bg-success",   textColor: "text-success-foreground",   rotate: 2,  imageUrl: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400&q=80" },
+  { name: "Thriller",  count: "890 books",   color: "bg-primary",   textColor: "text-primary-foreground",   rotate: -1, imageUrl: "https://images.unsplash.com/photo-1551269901-5c41c2cd0e67?w=400&q=80" },
+  { name: "Poetry",    count: "310 books",   color: "bg-secondary", textColor: "text-secondary-foreground", rotate: 1,  imageUrl: "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&q=80" },
+  { name: "Technology",count: "720 books",   color: "bg-foreground", textColor: "text-background",          rotate: -2, imageUrl: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=80" },
 ];
 
 export const GenreExplorerSection = () => (
@@ -114,17 +120,28 @@ export const GenreExplorerSection = () => (
         className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"
         initial="hidden" whileInView="show" viewport={{ once: true }} variants={stagger}
       >
-        {GENRES.map(({ name, count, color, textColor, rotate }) => (
-          <motion.div
-            key={name}
-            variants={fadeUp}
-            whileHover={{ rotate: 0, scale: 1.04, zIndex: 10 }}
-            style={{ rotate: `${rotate}deg` }}
-            className={`${color} ${textColor} brutal-border rounded-lg p-6 cursor-pointer relative group`}
-          >
-            <h3 className="font-heading text-2xl font-black leading-tight mb-1">{name}</h3>
-            <p className="font-body text-sm opacity-80">{count}</p>
-            <ArrowRight className="absolute bottom-4 right-4 w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity" />
+        {GENRES.map(({ name, count, color, textColor, rotate, imageUrl }) => (
+          <motion.div key={name} variants={fadeUp} style={{ rotate: `${rotate}deg` }}>
+            <PreviewLinkCard href="/dashboard/books" followCursor="x" className="block">
+              <PreviewLinkCardTrigger className="block">
+                <motion.div
+                  whileHover={{ rotate: 0, scale: 1.04, zIndex: 10 }}
+                  className={`${color} ${textColor} brutal-border rounded-lg p-6 cursor-pointer relative group`}
+                >
+                  <h3 className="font-heading text-2xl font-black leading-tight mb-1">{name}</h3>
+                  <p className="font-body text-sm opacity-80">{count}</p>
+                  <ArrowRight className="absolute bottom-4 right-4 w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </motion.div>
+              </PreviewLinkCardTrigger>
+
+              <PreviewLinkCardContent side="top" sideOffset={14} align="center">
+                <PreviewLinkCardImage src={imageUrl} alt={name} />
+                <div className="p-3 border-t-2 border-border">
+                  <p className="font-heading font-black text-sm">{name}</p>
+                  <p className="text-xs text-muted-foreground font-body">{count} available</p>
+                </div>
+              </PreviewLinkCardContent>
+            </PreviewLinkCard>
           </motion.div>
         ))}
       </motion.div>
