@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
   BookOpen, Headphones, Tablet, ArrowRight, Calendar,
-  Clock, MapPin, Users, Sparkles, Star,
+  Clock, MapPin, Users,
 } from "lucide-react";
 import {
   PreviewLinkCard,
@@ -10,6 +10,7 @@ import {
   PreviewLinkCardContent,
   PreviewLinkCardImage,
 } from "@/components/animate-ui/components/radix/preview-link-card";
+import { DomeGallery } from "@/components/landing/DomeGallery";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 32 },
@@ -162,19 +163,19 @@ export const GenreExplorerSection = () => (
    3. NEW ARRIVALS
 ───────────────────────────────────────────────────────────── */
 const NEW_ARRIVALS = [
-  { title: "The Quiet Algorithm",     author: "Nadia Cross",       genre: "Sci-Fi",    rating: 4.8, color: "bg-primary",   days: 2 },
-  { title: "Echoes of the Forgotten", author: "Marcus Afolabi",    genre: "Mystery",   rating: 4.6, color: "bg-secondary", days: 4 },
-  { title: "A Thousand Paper Suns",   author: "Yuki Tanaka",       genre: "Fiction",   rating: 4.9, color: "bg-accent",    days: 5 },
-  { title: "The Iron Diplomat",       author: "Sofia Reyes",       genre: "History",   rating: 4.5, color: "bg-success",   days: 6 },
-  { title: "Beyond the Fold",         author: "James Okafor",      genre: "Thriller",  rating: 4.7, color: "bg-primary",   days: 7 },
-  { title: "Roots & Satellites",      author: "Amara Diallo",      genre: "Biography", rating: 4.4, color: "bg-foreground",days: 7 },
+  { title: "The Quiet Algorithm",     author: "Nadia Cross",       genre: "Sci-Fi",    rating: 4.8, color: "bg-primary",   days: 2, imageUrl: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=300&q=80" },
+  { title: "Echoes of the Forgotten", author: "Marcus Afolabi",    genre: "Mystery",   rating: 4.6, color: "bg-secondary", days: 4, imageUrl: "https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?w=300&q=80" },
+  { title: "A Thousand Paper Suns",   author: "Yuki Tanaka",       genre: "Fiction",   rating: 4.9, color: "bg-accent",    days: 5, imageUrl: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=300&q=80" },
+  { title: "The Iron Diplomat",       author: "Sofia Reyes",       genre: "History",   rating: 4.5, color: "bg-success",   days: 6, imageUrl: "https://images.unsplash.com/photo-1564415315949-7a0c4c73aab4?w=300&q=80" },
+  { title: "Beyond the Fold",         author: "James Okafor",      genre: "Thriller",  rating: 4.7, color: "bg-primary",   days: 7, imageUrl: "https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?w=300&q=80" },
+  { title: "Roots & Satellites",      author: "Amara Diallo",      genre: "Biography", rating: 4.4, color: "bg-foreground",days: 7, imageUrl: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=300&q=80" },
 ];
 
 export const NewArrivalsSection = () => (
-  <section className="py-20 px-6 bg-muted/30">
+  <section className="py-20 px-6 bg-muted/30 overflow-hidden">
     <div className="container mx-auto">
       <motion.div
-        className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-12 gap-4"
+        className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-6 gap-4"
         initial="hidden" whileInView="show" viewport={{ once: true }} variants={stagger}
       >
         <div>
@@ -193,43 +194,12 @@ export const NewArrivalsSection = () => (
       </motion.div>
 
       <motion.div
-        className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-        initial="hidden" whileInView="show" viewport={{ once: true }} variants={stagger}
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ type: "spring", stiffness: 60, delay: 0.2 }}
       >
-        {NEW_ARRIVALS.map(({ title, author, genre, rating, color, days }) => (
-          <motion.div
-            key={title}
-            variants={fadeUp}
-            className="brutal-card rounded-lg overflow-hidden group hover:-translate-y-1 transition-transform"
-          >
-            <div className={`${color} h-36 relative flex items-end p-4`}>
-              <span className="absolute top-3 left-3 bg-foreground text-background font-heading font-black text-xs px-2 py-1 rounded inline-flex items-center gap-1">
-                <Sparkles className="w-3 h-3" /> Just Dropped
-              </span>
-              <span className="text-xs font-heading font-bold opacity-70 absolute top-3 right-3">
-                {days}d ago
-              </span>
-              <BookOpen className="w-10 h-10 opacity-20 absolute bottom-4 right-4" />
-            </div>
-            <div className="p-5">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-heading font-bold text-muted-foreground uppercase tracking-wider">{genre}</span>
-                <span className="flex items-center gap-1 text-xs font-heading font-bold">
-                  <Star className="w-3.5 h-3.5 fill-current text-yellow-500" /> {rating}
-                </span>
-              </div>
-              <h3 className="font-heading font-black text-lg leading-tight mb-1">{title}</h3>
-              <p className="text-sm text-muted-foreground font-body mb-4">{author}</p>
-              <Link
-                to="/dashboard/books"
-                className="brutal-btn bg-foreground text-background rounded-md font-heading text-sm w-full inline-flex items-center justify-center gap-2"
-                data-testid={`button-borrow-${title.replace(/\s/g, '-').toLowerCase()}`}
-              >
-                Borrow Now <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </motion.div>
-        ))}
+        <DomeGallery items={NEW_ARRIVALS} radius={360} dragDampening={2} grayscale />
       </motion.div>
     </div>
   </section>
