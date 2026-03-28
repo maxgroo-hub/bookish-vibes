@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import {
   BookOpen, Headphones, Tablet, ArrowRight, Calendar,
-  Clock, MapPin, Users,
+  Clock, MapPin, Users, Star, Sparkles,
 } from "lucide-react";
 import {
   PreviewLinkCard,
@@ -10,7 +10,6 @@ import {
   PreviewLinkCardContent,
   PreviewLinkCardImage,
 } from "@/components/animate-ui/components/radix/preview-link-card";
-import { DomeGallery } from "@/components/landing/DomeGallery";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 32 },
@@ -169,45 +168,80 @@ const NEW_ARRIVALS = [
   { title: "The Iron Diplomat",       author: "Sofia Reyes",       genre: "History",   rating: 4.5, color: "bg-success",   days: 6, imageUrl: "https://images.unsplash.com/photo-1564415315949-7a0c4c73aab4?w=300&q=80" },
   { title: "Beyond the Fold",         author: "James Okafor",      genre: "Thriller",  rating: 4.7, color: "bg-primary",   days: 7, imageUrl: "https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?w=300&q=80" },
   { title: "Roots & Satellites",      author: "Amara Diallo",      genre: "Biography", rating: 4.4, color: "bg-foreground",days: 7, imageUrl: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=300&q=80" },
+  { title: "Neon Prophecy",           author: "Lin Fei",           genre: "Sci-Fi",    rating: 4.7, color: "bg-secondary", days: 8, imageUrl: "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=300&q=80" },
+  { title: "The Last Cartographer",   author: "Elena Vasquez",     genre: "Adventure", rating: 4.5, color: "bg-accent",    days: 9, imageUrl: "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=300&q=80" },
 ];
 
-export const NewArrivalsSection = () => (
-  <section className="py-20 px-6 bg-muted/30">
-    <div className="container mx-auto">
-      {/* Title row — always above the dome, never overlapped */}
-      <motion.div
-        className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-0 gap-4 relative z-10"
-        initial="hidden" whileInView="show" viewport={{ once: true }} variants={stagger}
-      >
-        <div>
-          <motion.p variants={fadeUp} className="font-heading font-bold text-sm tracking-[0.3em] uppercase text-muted-foreground mb-2">
-            Fresh Off the Shelf
-          </motion.p>
-          <motion.h2 variants={fadeUp} className="font-heading text-4xl md:text-5xl font-black">
-            New Arrivals
-          </motion.h2>
-        </div>
-        <motion.div variants={fadeUp}>
-          <Link to="/dashboard/books" className="brutal-btn bg-background text-foreground rounded-md font-heading text-sm inline-flex items-center gap-2">
-            View All <ArrowRight className="w-4 h-4" />
-          </Link>
-        </motion.div>
-      </motion.div>
+type ArrivalBook = typeof NEW_ARRIVALS[number];
 
-      {/* Dome — clipped so cards never overflow into the title */}
-      <motion.div
-        className="relative overflow-hidden rounded-xl"
-        style={{ height: "540px" }}
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6, delay: 0.15 }}
-      >
-        <DomeGallery items={NEW_ARRIVALS} radius={250} nItems={30} dragDampening={2} grayscale />
-      </motion.div>
+const BookMarqueeCard = ({ book }: { book: ArrivalBook }) => (
+  <motion.div
+    className="brutal-card rounded-lg overflow-hidden flex-shrink-0 w-48 cursor-pointer"
+    whileHover={{ y: -6, scale: 1.03 }}
+    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+  >
+    <div className="relative h-28">
+      <img src={book.imageUrl} alt={book.title} draggable={false} className="w-full h-full object-cover" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+      <span className="absolute top-2 left-2 bg-foreground text-background font-heading font-black text-[9px] px-1.5 py-0.5 rounded inline-flex items-center gap-0.5">
+        <Sparkles className="w-2.5 h-2.5" /> New
+      </span>
+      <span className="absolute top-2 right-2 text-[9px] font-heading font-bold text-white/80">{book.days}d ago</span>
     </div>
-  </section>
+    <div className="p-3">
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[10px] font-heading font-bold text-muted-foreground uppercase tracking-wider">{book.genre}</span>
+        <span className="flex items-center gap-0.5 text-[10px] font-heading font-bold">
+          <Star className="w-2.5 h-2.5 fill-current text-yellow-500" /> {book.rating}
+        </span>
+      </div>
+      <h4 className="font-heading font-black text-xs leading-tight mb-0.5 line-clamp-2">{book.title}</h4>
+      <p className="text-[10px] text-muted-foreground font-body">{book.author}</p>
+    </div>
+  </motion.div>
 );
+
+export const NewArrivalsSection = () => {
+  const row1 = [...NEW_ARRIVALS, ...NEW_ARRIVALS, ...NEW_ARRIVALS];
+  const row2 = [...NEW_ARRIVALS].reverse();
+  const row2Doubled = [...row2, ...row2, ...row2];
+
+  return (
+    <section className="py-20 bg-muted/30 overflow-hidden">
+      {/* Title — inside container, can never be touched by cards */}
+      <div className="container mx-auto px-6 mb-10">
+        <motion.div
+          className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4"
+          initial="hidden" whileInView="show" viewport={{ once: true }} variants={stagger}
+        >
+          <div>
+            <motion.p variants={fadeUp} className="font-heading font-bold text-sm tracking-[0.3em] uppercase text-muted-foreground mb-2">
+              Fresh Off the Shelf
+            </motion.p>
+            <motion.h2 variants={fadeUp} className="font-heading text-4xl md:text-5xl font-black">
+              New Arrivals
+            </motion.h2>
+          </div>
+          <motion.div variants={fadeUp}>
+            <Link to="/dashboard/books" className="brutal-btn bg-background text-foreground rounded-md font-heading text-sm inline-flex items-center gap-2">
+              View All <ArrowRight className="w-4 h-4" />
+            </Link>
+          </motion.div>
+        </motion.div>
+      </div>
+
+      {/* Row 1 — scrolls left */}
+      <div className="flex gap-3 mb-3 animate-marquee w-max">
+        {row1.map((book, i) => <BookMarqueeCard key={i} book={book} />)}
+      </div>
+
+      {/* Row 2 — scrolls right */}
+      <div className="flex gap-3 w-max" style={{ animation: "marquee 35s linear infinite reverse" }}>
+        {row2Doubled.map((book, i) => <BookMarqueeCard key={i} book={book} />)}
+      </div>
+    </section>
+  );
+};
 
 /* ─────────────────────────────────────────────────────────────
    4. LIBRARY EVENTS & PROGRAMS

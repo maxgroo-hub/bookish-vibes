@@ -113,7 +113,7 @@ const FeaturesSection = () => {
 
   return (
     <section id="features" className="relative">
-      <div className="py-20 px-6">
+      <div className="pt-16 pb-2 px-6">
         <motion.h2
           className="font-heading text-4xl md:text-5xl font-black text-center mb-4"
           initial={{ opacity: 0, y: 20 }}
