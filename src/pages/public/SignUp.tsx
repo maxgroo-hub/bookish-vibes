@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Library, Mail, Lock, Eye, EyeOff, User, ShieldCheck } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuthStore } from "@/store";
+import { toast } from "@/components/ui/sonner";
 
 const schema = z.object({
   fullName: z.string().min(2, "Name is required").max(100),
@@ -21,6 +23,8 @@ type FormData = z.infer<typeof schema>;
 
 const SignUp = () => {
   const [showPass, setShowPass] = useState(false);
+  const navigate = useNavigate();
+  const loginAsGuest = useAuthStore((s) => s.loginAsGuest);
   const { register, handleSubmit, watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { role: "member" },
@@ -29,6 +33,12 @@ const SignUp = () => {
 
   const onSubmit = (data: FormData) => {
     console.log("Sign up:", data);
+  };
+
+  const handleGuestLogin = (role: "member" | "admin") => {
+    loginAsGuest(role);
+    toast.success(`Logged in as Guest ${role === "admin" ? "Admin" : "User"}`);
+    navigate(role === "admin" ? "/admin" : "/dashboard");
   };
 
   return (
@@ -129,6 +139,27 @@ const SignUp = () => {
             Already have an account?{" "}
             <Link to="/signin" className="font-bold text-accent hover:underline">Sign In</Link>
           </p>
+
+          <div className="flex items-center gap-4 mt-6">
+            <div className="flex-1 h-0.5 bg-foreground/20" />
+            <span className="text-sm text-muted-foreground font-semibold">GUEST LOGIN</span>
+            <div className="flex-1 h-0.5 bg-foreground/20" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 mt-6">
+            <button
+              onClick={() => handleGuestLogin("member")}
+              className="brutal-btn bg-accent text-accent-foreground rounded-md text-sm font-heading flex items-center justify-center gap-2"
+            >
+              <User className="w-4 h-4" /> Guest User
+            </button>
+            <button
+              onClick={() => handleGuestLogin("admin")}
+              className="brutal-btn bg-secondary text-secondary-foreground rounded-md text-sm font-heading flex items-center justify-center gap-2"
+            >
+              <ShieldCheck className="w-4 h-4" /> Guest Admin
+            </button>
+          </div>
         </div>
       </motion.div>
     </div>

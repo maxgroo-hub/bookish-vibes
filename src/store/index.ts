@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 interface AuthStore {
   user: {
@@ -8,24 +9,38 @@ interface AuthStore {
     role: "member" | "admin";
     avatarUrl?: string;
     membershipType: "basic" | "premium" | "vip";
+    isGuest?: boolean;
   } | null;
   isAuthenticated: boolean;
   setUser: (user: AuthStore["user"]) => void;
   logout: () => void;
+  loginAsGuest: (role: "member" | "admin") => void;
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
-  user: {
-    id: "demo-user",
-    fullName: "Alex Johnson",
-    email: "alex@example.com",
-    role: "member",
-    membershipType: "premium",
-  },
-  isAuthenticated: true,
-  setUser: (user) => set({ user, isAuthenticated: !!user }),
-  logout: () => set({ user: null, isAuthenticated: false }),
-}));
+export const useAuthStore = create<AuthStore>()(
+  persist(
+    (set) => ({
+      user: null,
+      isAuthenticated: false,
+      setUser: (user) => set({ user, isAuthenticated: !!user }),
+      logout: () => set({ user: null, isAuthenticated: false }),
+      loginAsGuest: (role) => set({
+        user: {
+          id: `guest-${role}`,
+          fullName: role === "admin" ? "Guest Admin" : "Guest User",
+          email: `guest@${role}.com`,
+          role,
+          membershipType: role === "admin" ? "vip" : "basic",
+          isGuest: true,
+        },
+        isAuthenticated: true,
+      }),
+    }),
+    {
+      name: "auth-storage",
+    }
+  )
+);
 
 interface UIStore {
   sidebarCollapsed: boolean;

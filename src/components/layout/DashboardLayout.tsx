@@ -1,12 +1,10 @@
 import { ReactNode } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Home, BookOpen, BookMarked, Clock, CreditCard, User, Bell, LogOut,
-  Menu, X, Library, Search, ChevronLeft,
-} from "lucide-react";
+import { Chrome as Home, BookOpen, BookMarked, Clock, CreditCard, User, Bell, LogOut, Menu, X, Library, Search, ChevronLeft } from "lucide-react";
 import { useUIStore, useAuthStore } from "@/store";
 import { mockNotifications } from "@/lib/mockData";
+import { toast } from "@/components/ui/sonner";
 
 const memberNav = [
   { label: "Dashboard", to: "/dashboard", icon: Home },
@@ -21,8 +19,16 @@ const memberNav = [
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
   const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+  const navigate = useNavigate();
   const location = useLocation();
   const unreadCount = mockNotifications.filter((n) => !n.read).length;
+
+  const handleLogout = () => {
+    logout();
+    toast.success("Logged out successfully");
+    navigate("/");
+  };
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -60,7 +66,16 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
           })}
         </nav>
 
-        <div className="p-3 brutal-border border-b-0 border-x-0">
+        <div className="p-3 brutal-border border-b-0 border-x-0 space-y-2">
+          {user?.isGuest && !sidebarCollapsed && (
+            <div className="bg-accent/20 text-accent px-3 py-2 rounded-md text-xs font-bold text-center brutal-border">
+              GUEST MODE
+            </div>
+          )}
+          <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md hover:bg-muted font-heading text-sm font-semibold">
+            <LogOut className="w-5 h-5" />
+            {!sidebarCollapsed && "Logout"}
+          </button>
           <button onClick={toggleSidebar} className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md hover:bg-muted font-heading text-sm font-semibold">
             <ChevronLeft className={`w-5 h-5 transition-transform ${sidebarCollapsed ? "rotate-180" : ""}`} />
             {!sidebarCollapsed && "Collapse"}
@@ -85,6 +100,11 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            {user?.isGuest && (
+              <span className="bg-accent/20 text-accent px-2 py-1 rounded-md text-xs font-bold brutal-border hidden sm:inline">
+                GUEST
+              </span>
+            )}
             <Link to="/dashboard/notifications" className="relative">
               <Bell className="w-5 h-5" />
               {unreadCount > 0 && (
@@ -97,7 +117,6 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
               <div className="w-8 h-8 bg-primary brutal-border rounded-full flex items-center justify-center font-heading font-bold text-sm text-primary-foreground">
                 {user?.fullName?.charAt(0) || "U"}
               </div>
-              {/* <span className="hidden sm:block font-heading font-semibold text-sm">{user?.fullName}</span> */}
             </div>
           </div>
         </header>

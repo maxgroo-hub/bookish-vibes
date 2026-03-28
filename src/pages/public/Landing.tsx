@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
-import { BookOpen, Users, Clock, Search, Star, ArrowRight, Library, Shield, Zap } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { BookOpen, Users, Clock, Search, Star, ArrowRight, Library, Shield, Zap, User, ShieldCheck } from "lucide-react";
+import { useAuthStore } from "@/store";
+import { toast } from "@/components/ui/sonner";
 
 const words = ["Read More.", "Learn Faster.", "Explore Freely."];
 
@@ -93,6 +95,14 @@ const Landing = () => {
   const booksCount = useCountUp(12500);
   const membersCount = useCountUp(3200);
   const borrowsCount = useCountUp(45000);
+  const navigate = useNavigate();
+  const loginAsGuest = useAuthStore((s) => s.loginAsGuest);
+
+  const handleGuestLogin = (role: "member" | "admin") => {
+    loginAsGuest(role);
+    toast.success(`Logged in as Guest ${role === "admin" ? "Admin" : "User"}`);
+    navigate(role === "admin" ? "/admin" : "/dashboard");
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -109,6 +119,12 @@ const Landing = () => {
             <a href="#testimonials" className="hover:text-secondary transition-colors">Reviews</a>
           </div>
           <div className="flex gap-3">
+            <button onClick={() => handleGuestLogin("member")} className="brutal-btn bg-accent text-accent-foreground rounded-md text-sm font-heading hidden lg:flex items-center gap-1">
+              <User className="w-4 h-4" /> Try as Guest
+            </button>
+            <button onClick={() => handleGuestLogin("admin")} className="brutal-btn bg-secondary text-secondary-foreground rounded-md text-sm font-heading hidden lg:flex items-center gap-1">
+              <ShieldCheck className="w-4 h-4" /> Admin Demo
+            </button>
             <Link to="/signin" className="brutal-btn bg-background text-foreground rounded-md text-sm font-heading">
               Sign In
             </Link>
