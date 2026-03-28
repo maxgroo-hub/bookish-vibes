@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, useTransform, useScroll } from "framer-motion";
 import { Link } from "react-router-dom";
 import { BookOpen, Users, Clock, Search, Star, ArrowRight, Library, Shield, Zap } from "lucide-react";
 import ContactSection from "@/components/landing/ContactSection";
@@ -95,6 +95,48 @@ const testimonials = [
   { name: "David O.", role: "Book Club Lead", text: "Our entire club uses LibraVault. It's transformed how we share books." },
   { name: "Emma W.", role: "Student", text: "I love the notification system — never had an overdue book since!" },
 ];
+
+const FeaturesSection = () => {
+  const targetRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: targetRef });
+  const x = useTransform(scrollYProgress, [0, 1], ["0%", "-62%"]);
+
+  return (
+    <section id="features" className="relative">
+      <div className="py-20 px-6">
+        <motion.h2
+          className="font-heading text-4xl md:text-5xl font-black text-center mb-4"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+        >
+          Everything You Need
+        </motion.h2>
+        <p className="text-center text-muted-foreground font-body mb-4">Scroll to explore</p>
+      </div>
+      <section ref={targetRef} className="relative h-[300vh]">
+        <div className="sticky top-0 flex h-screen items-center overflow-hidden">
+          <motion.div style={{ x }} className="flex gap-6 pl-6">
+            {features.map((f) => (
+              <div
+                key={f.title}
+                className="brutal-card p-8 rounded-lg flex-shrink-0 w-[380px] h-[280px] flex flex-col justify-between"
+              >
+                <div>
+                  <div className={`${f.color} w-14 h-14 rounded-lg brutal-border flex items-center justify-center mb-5`}>
+                    <f.icon className="w-7 h-7" />
+                  </div>
+                  <h3 className="font-heading text-2xl font-bold mb-3">{f.title}</h3>
+                  <p className="text-muted-foreground font-body text-base">{f.desc}</p>
+                </div>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+    </section>
+  );
+};
 
 const Landing = () => {
   const typedText = useTypewriter(words);
@@ -201,35 +243,7 @@ const Landing = () => {
       </section>
 
       {/* Features */}
-      <section id="features" className="py-20 px-6">
-        <div className="container mx-auto">
-          <motion.h2
-            className="font-heading text-4xl md:text-5xl font-black text-center mb-16"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            Everything You Need
-          </motion.h2>
-          <motion.div
-            className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-            variants={container}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true }}
-          >
-            {features.map((f) => (
-              <motion.div key={f.title} variants={item} className="brutal-card p-6 rounded-lg">
-                <div className={`${f.color} w-14 h-14 rounded-lg brutal-border flex items-center justify-center mb-4`}>
-                  <f.icon className="w-7 h-7" />
-                </div>
-                <h3 className="font-heading text-xl font-bold mb-2">{f.title}</h3>
-                <p className="text-muted-foreground font-body">{f.desc}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
+      <FeaturesSection />
 
       {/* Genre Explorer */}
       <GenreExplorerSection />
