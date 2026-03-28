@@ -172,10 +172,11 @@ const NEW_ARRIVALS = [
 ];
 
 export const NewArrivalsSection = () => (
-  <section className="py-20 px-6 bg-muted/30 overflow-hidden">
+  <section className="py-20 px-6 bg-muted/30">
     <div className="container mx-auto">
+      {/* Title row — always above the dome, never overlapped */}
       <motion.div
-        className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-6 gap-4"
+        className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-0 gap-4 relative z-10"
         initial="hidden" whileInView="show" viewport={{ once: true }} variants={stagger}
       >
         <div>
@@ -193,13 +194,16 @@ export const NewArrivalsSection = () => (
         </motion.div>
       </motion.div>
 
+      {/* Dome — clipped so cards never overflow into the title */}
       <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden rounded-xl"
+        style={{ height: "540px" }}
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
         viewport={{ once: true }}
-        transition={{ type: "spring", stiffness: 60, delay: 0.2 }}
+        transition={{ duration: 0.6, delay: 0.15 }}
       >
-        <DomeGallery items={NEW_ARRIVALS} radius={360} dragDampening={2} grayscale />
+        <DomeGallery items={NEW_ARRIVALS} radius={250} nItems={30} dragDampening={2} grayscale />
       </motion.div>
     </div>
   </section>

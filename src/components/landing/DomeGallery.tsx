@@ -13,15 +13,6 @@ export interface DomeItem {
   imageUrl: string;
 }
 
-const ITEM_CONFIGS = [
-  { phi: 0,   theta: -22 },
-  { phi: 120, theta: -22 },
-  { phi: 240, theta: -22 },
-  { phi: 60,  theta:  22 },
-  { phi: 180, theta:  22 },
-  { phi: 300, theta:  22 },
-];
-
 interface HoverCard {
   item: DomeItem;
   x: number;
@@ -31,13 +22,27 @@ interface HoverCard {
 interface DomeGalleryProps {
   items: DomeItem[];
   radius?: number;
+  nItems?: number;
   dragDampening?: number;
   grayscale?: boolean;
 }
 
+const GOLDEN_RATIO = (1 + Math.sqrt(5)) / 2;
+
+function getFibonacciSpherePositions(n: number) {
+  return Array.from({ length: n }, (_, i) => {
+    const theta = Math.acos(1 - (2 * (i + 0.5)) / n);
+    const phi = (2 * Math.PI * i) / GOLDEN_RATIO;
+    const xRot = 90 - (theta * 180) / Math.PI;
+    const yRot = (phi * 180) / Math.PI;
+    return { xRot, yRot };
+  });
+}
+
 export function DomeGallery({
   items,
-  radius = 360,
+  radius = 250,
+  nItems = 30,
   dragDampening = 2,
   grayscale = true,
 }: DomeGalleryProps) {
@@ -49,12 +54,16 @@ export function DomeGallery({
   const velocityRef = useRef(0);
   const rafRef = useRef<number>();
 
+  const positions = getFibonacciSpherePositions(nItems);
+  const tileCount = Math.ceil(nItems / items.length);
+  const tiled = Array.from({ length: tileCount }, () => items).flat().slice(0, nItems);
+
   useEffect(() => {
     let running = true;
     const loop = () => {
       if (!isDragging.current) {
-        velocityRef.current *= 0.96;
-        rotYRef.current += velocityRef.current + 0.12;
+        velocityRef.current *= 0.97;
+        rotYRef.current += velocityRef.current + 0.1;
         setRotY(rotYRef.current);
       }
       if (running) rafRef.current = requestAnimationFrame(loop);
@@ -101,81 +110,82 @@ export function DomeGallery({
   }, [dragDampening]);
 
   return (
-    <div
-      className="relative w-full h-[480px] cursor-grab active:cursor-grabbing select-none"
-      style={{ perspective: "900px" }}
-      onMouseDown={onMouseDown}
-      onMouseMove={onMouseMove}
-      onMouseUp={onMouseUp}
-      onMouseLeave={() => { onMouseUp(); setHoverCard(null); }}
-      onTouchStart={onTouchStart}
-      onTouchMove={onTouchMove}
-      onTouchEnd={onMouseUp}
-    >
+    <div className="relative w-full h-full">
+      {/* Perspective + drag layer */}
       <div
-        className="w-full h-full"
-        style={{ transformStyle: "preserve-3d", transform: `rotateY(${rotY}deg)` }}
+        className="absolute inset-0 cursor-grab active:cursor-grabbing select-none"
+        style={{ perspective: "900px" }}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={onMouseUp}
+        onMouseLeave={() => { onMouseUp(); setHoverCard(null); }}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onMouseUp}
       >
-        {items.map((item, i) => {
-          const { phi, theta } = ITEM_CONFIGS[i] ?? { phi: 0, theta: 0 };
-          const isHovered = hoverCard?.item.title === item.title;
+        {/* Rotating sphere */}
+        <div
+          className="w-full h-full"
+          style={{ transformStyle: "preserve-3d", transform: `rotateY(${rotY}deg)` }}
+        >
+          {tiled.map((item, i) => {
+            const { xRot, yRot } = positions[i];
+            const isHovered = hoverCard?.item.title === item.title && hoverCard?.item.author === item.author;
 
-          return (
-            <div
-              key={item.title}
-              style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                width: "150px",
-                height: "195px",
-                marginTop: "-97px",
-                marginLeft: "-75px",
-                transformStyle: "preserve-3d",
-                transform: `rotateY(${phi}deg) rotateX(${theta}deg) translateZ(${radius}px)`,
-                backfaceVisibility: "hidden",
-                transition: "filter 0.35s ease, transform 0.2s ease",
-                filter: grayscale && !isHovered ? "grayscale(100%) brightness(0.85)" : "grayscale(0%) brightness(1)",
-                zIndex: isHovered ? 20 : 1,
-              }}
-              onMouseEnter={(e) => {
-                if (isDragging.current) return;
-                setHoverCard({ item, x: e.clientX, y: e.clientY });
-              }}
-              onMouseMove={(e) => {
-                if (isDragging.current) { setHoverCard(null); return; }
-                setHoverCard({ item, x: e.clientX, y: e.clientY });
-              }}
-              onMouseLeave={() => setHoverCard(null)}
-            >
+            return (
               <div
-                className={`${item.color} w-full h-full brutal-border rounded-lg overflow-hidden relative cursor-pointer`}
-                style={{ boxShadow: isHovered ? "0 20px 60px rgba(0,0,0,0.4)" : "none", transition: "box-shadow 0.3s" }}
+                key={`${item.title}-${i}`}
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  width: "108px",
+                  height: "138px",
+                  marginTop: "-69px",
+                  marginLeft: "-54px",
+                  transformStyle: "preserve-3d",
+                  transform: `rotateY(${yRot}deg) rotateX(${xRot}deg) translateZ(${radius}px)`,
+                  backfaceVisibility: "hidden",
+                  transition: "filter 0.3s ease",
+                  filter: grayscale && !isHovered ? "grayscale(100%) brightness(0.8)" : "grayscale(0%) brightness(1.05)",
+                }}
+                onMouseEnter={(e) => {
+                  if (isDragging.current) return;
+                  setHoverCard({ item, x: e.clientX, y: e.clientY });
+                }}
+                onMouseMove={(e) => {
+                  if (isDragging.current) { setHoverCard(null); return; }
+                  setHoverCard({ item, x: e.clientX, y: e.clientY });
+                }}
+                onMouseLeave={() => setHoverCard(null)}
               >
-                <img
-                  src={item.imageUrl}
-                  alt={item.title}
-                  draggable={false}
-                  className="w-full h-full object-cover opacity-75"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex flex-col justify-end p-3">
-                  <p className="text-white font-heading font-black text-[11px] leading-tight line-clamp-2">{item.title}</p>
-                  <p className="text-white/70 font-body text-[10px] mt-0.5">{item.genre}</p>
+                <div className={`${item.color} w-full h-full brutal-border rounded-md overflow-hidden relative cursor-pointer`}>
+                  <img
+                    src={item.imageUrl}
+                    alt={item.title}
+                    draggable={false}
+                    className="w-full h-full object-cover opacity-80"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent flex flex-col justify-end p-1.5">
+                    <p className="text-white font-heading font-black text-[9px] leading-tight line-clamp-2">{item.title}</p>
+                  </div>
                 </div>
-                <span className="absolute top-2 left-2 bg-foreground text-background font-heading font-black text-[9px] px-1.5 py-0.5 rounded inline-flex items-center gap-0.5">
-                  <Sparkles className="w-2 h-2" /> New
-                </span>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
-      {/* Hover card — fixed in screen space, follows cursor */}
+      {/* Hint label */}
+      <p className="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs text-muted-foreground font-body opacity-50 select-none pointer-events-none z-10">
+        drag to rotate · hover to preview
+      </p>
+
+      {/* Hover card — fixed to viewport, not clipped by overflow */}
       <AnimatePresence>
         {hoverCard && (
           <motion.div
-            key={hoverCard.item.title}
+            key={hoverCard.item.title + hoverCard.item.author}
             initial={{ opacity: 0, scale: 0.88, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.88, y: 8 }}
@@ -183,20 +193,20 @@ export function DomeGallery({
             className="brutal-card rounded-lg overflow-hidden bg-background shadow-2xl pointer-events-none"
             style={{
               position: "fixed",
-              left: hoverCard.x + 18,
-              top: hoverCard.y - 220,
-              width: "220px",
+              left: hoverCard.x + 16,
+              top: Math.max(80, hoverCard.y - 230),
+              width: "210px",
               zIndex: 9999,
             }}
           >
-            <div className={`${hoverCard.item.color} h-28 relative`}>
-              <span className="absolute top-2 left-2 bg-foreground text-background font-heading font-black text-[10px] px-2 py-0.5 rounded inline-flex items-center gap-1">
-                <Sparkles className="w-2.5 h-2.5" /> Just Dropped
+            <div className={`${hoverCard.item.color} h-24 relative`}>
+              <span className="absolute top-2 left-2 bg-foreground text-background font-heading font-black text-[9px] px-1.5 py-0.5 rounded inline-flex items-center gap-0.5">
+                <Sparkles className="w-2 h-2" /> Just Dropped
               </span>
-              <span className="text-[10px] font-heading font-bold opacity-70 absolute top-2 right-2">
+              <span className="text-[9px] font-heading font-bold opacity-70 absolute top-2 right-2">
                 {hoverCard.item.days}d ago
               </span>
-              <BookOpen className="w-8 h-8 opacity-20 absolute bottom-3 right-3" />
+              <BookOpen className="w-7 h-7 opacity-20 absolute bottom-2 right-2" />
             </div>
             <div className="p-3">
               <div className="flex items-center justify-between mb-1">
@@ -204,11 +214,11 @@ export function DomeGallery({
                   {hoverCard.item.genre}
                 </span>
                 <span className="flex items-center gap-0.5 text-[10px] font-heading font-bold">
-                  <Star className="w-3 h-3 fill-current text-yellow-500" /> {hoverCard.item.rating}
+                  <Star className="w-2.5 h-2.5 fill-current text-yellow-500" /> {hoverCard.item.rating}
                 </span>
               </div>
               <h3 className="font-heading font-black text-sm leading-tight mb-0.5">{hoverCard.item.title}</h3>
-              <p className="text-xs text-muted-foreground font-body mb-3">{hoverCard.item.author}</p>
+              <p className="text-xs text-muted-foreground font-body mb-2.5">{hoverCard.item.author}</p>
               <Link
                 to="/dashboard/books"
                 className="brutal-btn bg-foreground text-background rounded-md font-heading text-xs w-full inline-flex items-center justify-center gap-1 pointer-events-auto"
@@ -219,11 +229,6 @@ export function DomeGallery({
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Drag hint */}
-      <p className="absolute bottom-2 left-1/2 -translate-x-1/2 text-xs text-muted-foreground font-body opacity-60 select-none pointer-events-none">
-        drag to rotate · hover to preview
-      </p>
     </div>
   );
 }
