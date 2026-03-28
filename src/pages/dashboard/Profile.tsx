@@ -1,12 +1,13 @@
 import { motion } from "framer-motion";
-import { User, Mail, Phone, MapPin, CreditCard, Trash2 } from "lucide-react";
+import { User, Mail, Phone, MapPin, Trash2 } from "lucide-react";
 import { useAuthStore } from "@/store";
+import ThemeSettingsPage from "@/components/theme/ThemeSettingsPage";
 
 const Profile = () => {
   const user = useAuthStore((s) => s.user);
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6 max-w-4xl">
       <h1 className="font-heading text-3xl font-black">My Profile</h1>
 
       {/* Membership Card */}
@@ -66,6 +67,11 @@ const Profile = () => {
         <button className="brutal-btn bg-primary text-primary-foreground rounded-md font-heading">
           Save Changes
         </button>
+      </div>
+
+      {/* Appearance */}
+      <div className="brutal-card p-6 rounded-lg">
+        <ThemeSettingsPage />
       </div>
 
       {/* Danger Zone */}

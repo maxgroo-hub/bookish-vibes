@@ -1,9 +1,11 @@
+import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import CustomCursor from "@/components/cursor/CustomCursor";
+import { useThemeStore } from "@/store/themeStore";
 
 import Landing from "@/pages/public/Landing";
 import SignIn from "@/pages/public/SignIn";
@@ -23,14 +25,24 @@ import AdminLayout from "@/components/layout/AdminLayout";
 import AdminHome from "@/pages/admin/AdminHome";
 import BookManagement from "@/pages/admin/BookManagement";
 import MemberManagement from "@/pages/admin/MemberManagement";
+import AdminSettings from "@/pages/admin/AdminSettings";
 
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
+const ThemeInit = () => {
+  const initTheme = useThemeStore((s) => s.initTheme);
+  useEffect(() => {
+    initTheme();
+  }, [initTheme]);
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
+      <ThemeInit />
       <CustomCursor />
       <Toaster />
       <Sonner />
@@ -55,6 +67,7 @@ const App = () => (
           <Route path="/admin" element={<AdminLayout><AdminHome /></AdminLayout>} />
           <Route path="/admin/books" element={<AdminLayout><BookManagement /></AdminLayout>} />
           <Route path="/admin/members" element={<AdminLayout><MemberManagement /></AdminLayout>} />
+          <Route path="/admin/settings" element={<AdminLayout><AdminSettings /></AdminLayout>} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>

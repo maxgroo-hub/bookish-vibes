@@ -1,10 +1,11 @@
 import { ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Chrome as Home, BookOpen, BookMarked, Clock, CreditCard, User, Bell, LogOut, Menu, X, Library, Search, ChevronLeft } from "lucide-react";
+import { Chrome as Home, BookOpen, BookMarked, Clock, CreditCard, User, Bell, LogOut, Menu, Library, Search, ChevronLeft, Palette } from "lucide-react";
 import { useUIStore, useAuthStore } from "@/store";
 import { mockNotifications } from "@/lib/mockData";
 import { toast } from "@/components/ui/sonner";
+import ThemeSwitcher from "@/components/theme/ThemeSwitcher";
 
 const memberNav = [
   { label: "Dashboard", to: "/dashboard", icon: Home },
@@ -34,13 +35,21 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
     <div className="min-h-screen bg-background flex">
       {/* Sidebar - desktop */}
       <motion.aside
-        className="hidden md:flex flex-col brutal-border border-t-0 border-b-0 border-l-0 bg-card"
+        className="hidden md:flex flex-col border-r-2 border-border flex-shrink-0"
+        style={{ backgroundColor: 'var(--t-sidebar-bg, #0A0A0A)' }}
         animate={{ width: sidebarCollapsed ? 72 : 260 }}
         transition={{ type: "spring", stiffness: 200, damping: 25 }}
       >
-        <div className="p-4 flex items-center gap-2 brutal-border border-t-0 border-x-0">
-          <Library className="w-7 h-7 flex-shrink-0" />
-          {!sidebarCollapsed && <span className="font-heading text-xl font-bold">LibraVault</span>}
+        <div
+          className="p-4 flex items-center gap-2 border-b-2"
+          style={{ borderColor: 'var(--t-sidebar-text, #FFE500)' }}
+        >
+          <Library className="w-7 h-7 flex-shrink-0" style={{ color: 'var(--t-sidebar-text, #FFE500)' }} />
+          {!sidebarCollapsed && (
+            <span className="font-heading text-xl font-bold" style={{ color: 'var(--t-sidebar-text, #FFE500)' }}>
+              LibraVault
+            </span>
+          )}
         </div>
 
         <nav className="flex-1 p-2 space-y-1">
@@ -50,14 +59,22 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
               <Link
                 key={item.to}
                 to={item.to}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-md font-heading font-semibold text-sm transition-all ${
-                  active ? "bg-primary text-primary-foreground brutal-shadow" : "hover:bg-muted"
-                }`}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-md font-heading font-semibold text-sm transition-all"
+                style={{
+                  backgroundColor: active ? 'var(--t-sidebar-active-bg, #FFE500)' : 'transparent',
+                  color: active ? 'var(--t-sidebar-active-text, #0A0A0A)' : 'var(--t-sidebar-text, #FFE500)',
+                }}
+                onMouseEnter={(e) => {
+                  if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--t-sidebar-hover, #1A1A1A)';
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+                }}
               >
                 <item.icon className="w-5 h-5 flex-shrink-0" />
                 {!sidebarCollapsed && <span>{item.label}</span>}
                 {item.label === "Notifications" && unreadCount > 0 && !sidebarCollapsed && (
-                  <span className="ml-auto bg-destructive text-destructive-foreground text-xs font-bold px-1.5 py-0.5 rounded-full brutal-border">
+                  <span className="ml-auto bg-destructive text-destructive-foreground text-xs font-bold px-1.5 py-0.5 rounded-full border border-current">
                     {unreadCount}
                   </span>
                 )}
@@ -66,17 +83,35 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
           })}
         </nav>
 
-        <div className="p-3 brutal-border border-b-0 border-x-0 space-y-2">
+        <div
+          className="p-3 border-t-2 space-y-2"
+          style={{ borderColor: 'var(--t-sidebar-text, #FFE500)' }}
+        >
           {user?.isGuest && !sidebarCollapsed && (
-            <div className="bg-accent/20 text-accent px-3 py-2 rounded-md text-xs font-bold text-center brutal-border">
+            <div
+              className="px-3 py-2 rounded-md text-xs font-bold text-center border"
+              style={{ color: 'var(--t-sidebar-text, #FFE500)', borderColor: 'var(--t-sidebar-text, #FFE500)' }}
+            >
               GUEST MODE
             </div>
           )}
-          <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md hover:bg-muted font-heading text-sm font-semibold">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md font-heading text-sm font-semibold transition-colors"
+            style={{ color: 'var(--t-sidebar-text, #FFE500)' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--t-sidebar-hover, #1A1A1A)'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
+          >
             <LogOut className="w-5 h-5" />
             {!sidebarCollapsed && "Logout"}
           </button>
-          <button onClick={toggleSidebar} className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md hover:bg-muted font-heading text-sm font-semibold">
+          <button
+            onClick={toggleSidebar}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md font-heading text-sm font-semibold transition-colors"
+            style={{ color: 'var(--t-sidebar-text, #FFE500)' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--t-sidebar-hover, #1A1A1A)'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
+          >
             <ChevronLeft className={`w-5 h-5 transition-transform ${sidebarCollapsed ? "rotate-180" : ""}`} />
             {!sidebarCollapsed && "Collapse"}
           </button>
@@ -86,7 +121,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top navbar */}
-        <header className="h-16 brutal-border border-t-0 border-x-0 flex items-center justify-between px-4 md:px-6 bg-card">
+        <header className="h-16 border-b-2 border-border flex items-center justify-between px-4 md:px-6 bg-card">
           <div className="flex items-center gap-3">
             <button onClick={toggleSidebar} className="md:hidden">
               <Menu className="w-6 h-6" />
@@ -99,12 +134,13 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
               />
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {user?.isGuest && (
               <span className="bg-accent/20 text-accent px-2 py-1 rounded-md text-xs font-bold brutal-border hidden sm:inline">
                 GUEST
               </span>
             )}
+            <ThemeSwitcher />
             <Link to="/dashboard/notifications" className="relative">
               <Bell className="w-5 h-5" />
               {unreadCount > 0 && (
@@ -138,7 +174,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
       </div>
 
       {/* Mobile bottom nav */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card brutal-border border-b-0 border-x-0 flex justify-around py-2 z-50">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t-2 border-border flex justify-around py-2 z-50">
         {memberNav.slice(0, 5).map((item) => {
           const active = location.pathname === item.to;
           return (

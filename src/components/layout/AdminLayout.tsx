@@ -1,9 +1,10 @@
 import { ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Chrome as Home, BookOpen, Users, BookMarked, Clock, CreditCard, Bell, FileText, Settings, Menu, Library, Search, ChevronLeft, Megaphone, ChartBar as BarChart3, LogOut } from "lucide-react";
+import { Chrome as Home, BookOpen, Users, BookMarked, Clock, CreditCard, Bell, Settings, Menu, Library, Search, ChevronLeft, Megaphone, ChartBar as BarChart3, LogOut } from "lucide-react";
 import { useUIStore, useAuthStore } from "@/store";
 import { toast } from "@/components/ui/sonner";
+import ThemeSwitcher from "@/components/theme/ThemeSwitcher";
 
 const adminNav = [
   { label: "Overview", to: "/admin", icon: Home },
@@ -34,16 +35,27 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
     <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
       <motion.aside
-        className="hidden md:flex flex-col brutal-border border-t-0 border-b-0 border-l-0 bg-card"
+        className="hidden md:flex flex-col border-r-2 border-border flex-shrink-0"
+        style={{ backgroundColor: 'var(--t-sidebar-bg, #0A0A0A)' }}
         animate={{ width: sidebarCollapsed ? 72 : 260 }}
         transition={{ type: "spring", stiffness: 200, damping: 25 }}
       >
-        <div className="p-4 flex items-center gap-2 brutal-border border-t-0 border-x-0">
-          <Library className="w-7 h-7 flex-shrink-0 text-secondary" />
+        <div
+          className="p-4 flex items-center gap-2 border-b-2"
+          style={{ borderColor: 'var(--t-sidebar-text, #FFE500)' }}
+        >
+          <Library className="w-7 h-7 flex-shrink-0" style={{ color: 'var(--t-sidebar-text, #FFE500)' }} />
           {!sidebarCollapsed && (
             <div className="flex items-center gap-2">
-              <span className="font-heading text-xl font-bold">LibraVault</span>
-              <span className="badge-admin">ADMIN</span>
+              <span className="font-heading text-xl font-bold" style={{ color: 'var(--t-sidebar-text, #FFE500)' }}>
+                LibraVault
+              </span>
+              <span
+                className="text-[10px] font-bold px-1.5 py-0.5 rounded"
+                style={{ backgroundColor: 'var(--t-sidebar-text, #FFE500)', color: 'var(--t-sidebar-bg, #0A0A0A)' }}
+              >
+                ADMIN
+              </span>
             </div>
           )}
         </div>
@@ -55,9 +67,17 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
               <Link
                 key={item.to}
                 to={item.to}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-md font-heading font-semibold text-sm transition-all ${
-                  active ? "bg-secondary text-secondary-foreground brutal-shadow" : "hover:bg-muted"
-                }`}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-md font-heading font-semibold text-sm transition-all"
+                style={{
+                  backgroundColor: active ? 'var(--t-sidebar-active-bg, #FFE500)' : 'transparent',
+                  color: active ? 'var(--t-sidebar-active-text, #0A0A0A)' : 'var(--t-sidebar-text, #FFE500)',
+                }}
+                onMouseEnter={(e) => {
+                  if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--t-sidebar-hover, #1A1A1A)';
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
+                }}
               >
                 <item.icon className="w-5 h-5 flex-shrink-0" />
                 {!sidebarCollapsed && <span>{item.label}</span>}
@@ -66,17 +86,35 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
           })}
         </nav>
 
-        <div className="p-3 brutal-border border-b-0 border-x-0 space-y-2">
+        <div
+          className="p-3 border-t-2 space-y-2"
+          style={{ borderColor: 'var(--t-sidebar-text, #FFE500)' }}
+        >
           {user?.isGuest && !sidebarCollapsed && (
-            <div className="bg-secondary/20 text-secondary px-3 py-2 rounded-md text-xs font-bold text-center brutal-border">
+            <div
+              className="px-3 py-2 rounded-md text-xs font-bold text-center border"
+              style={{ color: 'var(--t-sidebar-text, #FFE500)', borderColor: 'var(--t-sidebar-text, #FFE500)' }}
+            >
               GUEST ADMIN
             </div>
           )}
-          <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md hover:bg-muted font-heading text-sm font-semibold">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md font-heading text-sm font-semibold transition-colors"
+            style={{ color: 'var(--t-sidebar-text, #FFE500)' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--t-sidebar-hover, #1A1A1A)'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
+          >
             <LogOut className="w-5 h-5" />
             {!sidebarCollapsed && "Logout"}
           </button>
-          <button onClick={toggleSidebar} className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md hover:bg-muted font-heading text-sm font-semibold">
+          <button
+            onClick={toggleSidebar}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md font-heading text-sm font-semibold transition-colors"
+            style={{ color: 'var(--t-sidebar-text, #FFE500)' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--t-sidebar-hover, #1A1A1A)'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
+          >
             <ChevronLeft className={`w-5 h-5 transition-transform ${sidebarCollapsed ? "rotate-180" : ""}`} />
             {!sidebarCollapsed && "Collapse"}
           </button>
@@ -84,7 +122,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
       </motion.aside>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 brutal-border border-t-0 border-x-0 flex items-center justify-between px-4 md:px-6 bg-card">
+        <header className="h-16 border-b-2 border-border flex items-center justify-between px-4 md:px-6 bg-card">
           <div className="flex items-center gap-3">
             <button onClick={toggleSidebar} className="md:hidden"><Menu className="w-6 h-6" /></button>
             <div className="relative hidden sm:block">
@@ -92,12 +130,13 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
               <input placeholder="Search..." className="brutal-input pl-10 py-2 text-sm rounded-md w-64" />
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {user?.isGuest && (
               <span className="bg-secondary/20 text-secondary px-2 py-1 rounded-md text-xs font-bold brutal-border hidden sm:inline">
                 GUEST
               </span>
             )}
+            <ThemeSwitcher />
             <span className="badge-admin">ADMIN</span>
             <div className="w-8 h-8 bg-secondary brutal-border rounded-full flex items-center justify-center font-heading font-bold text-sm text-secondary-foreground">
               {user?.fullName?.charAt(0) || "A"}
@@ -121,7 +160,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
       </div>
 
       {/* Mobile bottom nav */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card brutal-border border-b-0 border-x-0 flex justify-around py-2 z-50">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t-2 border-border flex justify-around py-2 z-50">
         {adminNav.slice(0, 5).map((item) => {
           const active = location.pathname === item.to;
           return (
