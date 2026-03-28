@@ -3,6 +3,7 @@ import { motion, useTransform, useScroll } from "framer-motion";
 import { Link } from "react-router-dom";
 import { BookOpen, Users, Clock, Search, Star, ArrowRight, Library, Shield, Zap } from "lucide-react";
 import ContactSection from "@/components/landing/ContactSection";
+import { AvatarCircles } from "@/registry/magicui/avatar-circles";
 import {
   PartnersSection,
   GenreExplorerSection,
@@ -85,6 +86,15 @@ const features = [
   { icon: Shield, title: "Secure Access", desc: "Role-based access for members and administrators.", color: "bg-success" },
   { icon: Star, title: "Rate & Review", desc: "Share your thoughts and discover highly rated books.", color: "bg-primary" },
   { icon: Zap, title: "Real-time Updates", desc: "Live availability and notification updates.", color: "bg-secondary" },
+];
+
+const avatars = [
+  { imageUrl: "https://avatars.githubusercontent.com/u/16860528", profileUrl: "https://github.com/dillionverma" },
+  { imageUrl: "https://avatars.githubusercontent.com/u/20110627", profileUrl: "https://github.com/tomonarifeehan" },
+  { imageUrl: "https://avatars.githubusercontent.com/u/106103625", profileUrl: "https://github.com/BankkRoll" },
+  { imageUrl: "https://avatars.githubusercontent.com/u/59228569", profileUrl: "https://github.com/safethecode" },
+  { imageUrl: "https://avatars.githubusercontent.com/u/59442788", profileUrl: "https://github.com/sanjay-mali" },
+  { imageUrl: "https://avatars.githubusercontent.com/u/89768406", profileUrl: "https://github.com/itsarghyadas" },
 ];
 
 const testimonials = [
@@ -279,9 +289,17 @@ const Landing = () => {
 
       {/* Testimonials Marquee */}
       <section id="testimonials" className="py-20 px-6 overflow-hidden">
-        <h2 className="font-heading text-4xl md:text-5xl font-black text-center mb-16">
-          What People Say
-        </h2>
+        <div className="flex flex-col items-center mb-16 gap-6">
+          <h2 className="font-heading text-4xl md:text-5xl font-black text-center">
+            What People Say
+          </h2>
+          <div className="flex flex-col items-center gap-3">
+            <AvatarCircles numPeople={99} avatarUrls={avatars} />
+            <p className="text-sm text-muted-foreground font-body">
+              Join <span className="font-bold text-foreground">99+</span> happy members already using LibraVault
+            </p>
+          </div>
+        </div>
         <div className="relative">
           <div className="flex animate-marquee gap-6" style={{ width: "max-content" }}>
             {[...testimonials, ...testimonials].map((t, i) => (
