@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { motion, useTransform, useScroll } from "framer-motion";
+import { motion, useTransform, useScroll, useMotionValue, useSpring } from "framer-motion";
 import { Link } from "react-router-dom";
 import { BookOpen, Users, Clock, Search, Star, ArrowRight, Library, Shield, Zap } from "lucide-react";
 import ContactSection from "@/components/landing/ContactSection";
@@ -148,6 +148,111 @@ const FeaturesSection = () => {
   );
 };
 
+const BOOKS = [
+  { bg: "bg-primary",   rotate: -5, z: 3, tz: 20, floatDelay: 0    },
+  { bg: "bg-secondary", rotate:  3, z: 2, tz: 10, floatDelay: 0.1  },
+  { bg: "bg-accent",    rotate: -2, z: 1, tz:  0, floatDelay: 0.2  },
+];
+
+const HeroBookViewer = () => {
+  const [isHovered, setIsHovered] = useState(false);
+  const isHoveredRef = useRef(false);
+  const parallaxRotYRef = useRef(0);
+
+  /* ── motion values ── */
+  const mouseNX = useMotionValue(0.5);
+  const mouseNY = useMotionValue(0.5);
+
+  const rotateX    = useSpring(useTransform(mouseNY, [0, 1], [12, -12]), { stiffness: 110, damping: 24 });
+  const xOffset    = useSpring(useTransform(mouseNX, [0, 1], [-16, 16]), { stiffness: 80,  damping: 20 });
+  const yOffset    = useSpring(useTransform(mouseNY, [0, 1], [-10, 10]), { stiffness: 80,  damping: 20 });
+  const shadowOpac  = useTransform(mouseNY, [0, 1], [0.08, 0.22]);
+
+  const rotateY       = useMotionValue(0);
+  const rotateYSpring = useSpring(rotateY, { stiffness: 55, damping: 18 });
+  const shadowScaleX  = useTransform(rotateYSpring, (v) => 0.75 + 0.25 * Math.cos((v * Math.PI) / 180));
+
+  /* ── global mouse → parallax ── */
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      const nx = e.clientX / window.innerWidth;
+      const ny = e.clientY / window.innerHeight;
+      mouseNX.set(nx);
+      mouseNY.set(ny);
+      parallaxRotYRef.current = (nx - 0.5) * 38;
+      if (!isHoveredRef.current) rotateY.set(parallaxRotYRef.current);
+    };
+    window.addEventListener("mousemove", onMove);
+    return () => window.removeEventListener("mousemove", onMove);
+  }, [mouseNX, mouseNY, rotateY]);
+
+  /* ── hover spin ── */
+  useEffect(() => {
+    isHoveredRef.current = isHovered;
+    if (!isHovered) { rotateY.set(parallaxRotYRef.current); return; }
+    let raf: number;
+    let angle = rotateY.get();
+    const loop = () => { angle += 0.75; rotateY.set(angle); raf = requestAnimationFrame(loop); };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [isHovered, rotateY]);
+
+  return (
+    <motion.div
+      className="flex-1 flex justify-center items-center"
+      initial={{ opacity: 0, x: 50 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ type: "spring", stiffness: 60, delay: 0.2 }}
+      style={{ perspective: "1000px" }}
+    >
+      <motion.div
+        className="relative w-64 h-80 cursor-pointer"
+        style={{ rotateX, rotateY: rotateYSpring, x: xOffset, y: yOffset, transformStyle: "preserve-3d" }}
+        onHoverStart={() => setIsHovered(true)}
+        onHoverEnd={() => setIsHovered(false)}
+      >
+        {/* Dynamic ground shadow */}
+        <motion.div
+          className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-52 h-8 rounded-full bg-foreground blur-xl pointer-events-none"
+          style={{ opacity: shadowOpac, scaleX: shadowScaleX }}
+        />
+
+        {/* Hover hint ring */}
+        <motion.div
+          className="absolute inset-0 rounded-lg border-2 border-foreground/0 pointer-events-none"
+          animate={{ borderColor: isHovered ? "hsl(var(--foreground) / 0.15)" : "hsl(var(--foreground) / 0)" }}
+          transition={{ duration: 0.3 }}
+        />
+
+        {/* Book stack */}
+        {BOOKS.map((book, i) => (
+          <motion.div
+            key={i}
+            className={`absolute inset-0 ${book.bg} brutal-border rounded-lg`}
+            style={{ zIndex: book.z, transform: `rotate(${book.rotate}deg) translateY(${i * -15}px) translateZ(${book.tz}px)` }}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1, y: [0, -10, 0] }}
+            transition={{
+              opacity: { delay: 0.4 + i * 0.15, type: "spring" },
+              scale:   { delay: 0.4 + i * 0.15, type: "spring" },
+              y: { repeat: Infinity, repeatType: "reverse", duration: 2.8 + i * 0.5, ease: "easeInOut", delay: book.floatDelay * 3 },
+            }}
+          >
+            <div className="p-6 flex flex-col h-full justify-between">
+              <div>
+                <div className="w-16 h-1 bg-foreground mb-3 rounded" />
+                <div className="w-24 h-1 bg-foreground/50 mb-2 rounded" />
+                <div className="w-20 h-1 bg-foreground/30 rounded" />
+              </div>
+              <BookOpen className="w-12 h-12 opacity-30" />
+            </div>
+          </motion.div>
+        ))}
+      </motion.div>
+    </motion.div>
+  );
+};
+
 const Landing = () => {
   const typedText = useTypewriter(words);
   const booksCount = useCountUp(12500);
@@ -212,43 +317,8 @@ const Landing = () => {
             </div>
           </motion.div>
 
-          {/* 3D Book Stack */}
-          <motion.div
-            className="flex-1 flex justify-center"
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ type: "spring", stiffness: 60, delay: 0.2 }}
-          >
-            <div className="relative w-64 h-80 perspective-[800px]">
-              {[
-                { bg: "bg-primary", rotate: -5, z: 3, delay: 0 },
-                { bg: "bg-secondary", rotate: 3, z: 2, delay: 0.1 },
-                { bg: "bg-accent", rotate: -2, z: 1, delay: 0.2 },
-              ].map((book, i) => (
-                <motion.div
-                  key={i}
-                  className={`absolute inset-0 ${book.bg} brutal-border rounded-lg animate-float`}
-                  style={{
-                    zIndex: book.z,
-                    animationDelay: `${book.delay * 3}s`,
-                    transform: `rotate(${book.rotate}deg) translateY(${i * -15}px)`,
-                  }}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.4 + i * 0.15, type: "spring" }}
-                >
-                  <div className="p-6 flex flex-col h-full justify-between">
-                    <div>
-                      <div className="w-16 h-1 bg-foreground mb-3 rounded" />
-                      <div className="w-24 h-1 bg-foreground/50 mb-2 rounded" />
-                      <div className="w-20 h-1 bg-foreground/30 rounded" />
-                    </div>
-                    <BookOpen className="w-12 h-12 opacity-30" />
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
+          {/* 3D Book Stack — ModelViewer-style */}
+          <HeroBookViewer />
         </div>
       </section>
 
