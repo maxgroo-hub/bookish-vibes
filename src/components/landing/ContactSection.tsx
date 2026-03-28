@@ -2,9 +2,9 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Phone, Mail, MapPin, Clock, ChevronDown, ChevronUp,
-  Send, AlertTriangle, Lightbulb, CheckCircle, Star,
-  Bell, ArrowRight, Users, Headphones, BookOpen, Cpu,
-  Zap, Globe, Twitter, Instagram, Youtube, Linkedin, Facebook
+  Send, AlertTriangle, Lightbulb, CheckCircle,
+  Bell, ArrowRight, Users, Headphones, BookOpen,
+  Globe, Twitter, Instagram, Youtube, Linkedin, Facebook
 } from "lucide-react";
 
 const TODAY = new Date().getDay(); // 0 = Sunday
@@ -17,13 +17,6 @@ const HOURS = [
   { day: "Friday",    dayIdx: 5, hours: "8:00 AM – 8:00 PM" },
   { day: "Saturday",  dayIdx: 6, hours: "10:00 AM – 6:00 PM" },
   { day: "Sunday",    dayIdx: 0, hours: "12:00 PM – 5:00 PM" },
-];
-
-const DEPARTMENTS = [
-  { name: "Membership Services", icon: Users,     phone: "+1 (555) 010-0001", email: "membership@libravault.org",  desc: "New cards, renewals, account queries" },
-  { name: "Lending & Returns",   icon: BookOpen,  phone: "+1 (555) 010-0002", email: "lending@libravault.org",     desc: "Borrow, return, renewals, holds" },
-  { name: "Events & Programs",   icon: Zap,       phone: "+1 (555) 010-0003", email: "events@libravault.org",      desc: "Workshops, reading clubs, talks" },
-  { name: "IT Support",          icon: Cpu,       phone: "+1 (555) 010-0004", email: "it@libravault.org",          desc: "Website issues, account access, tech help" },
 ];
 
 const FAQS = [
@@ -76,42 +69,12 @@ const FaqItem = ({ q, a }: { q: string; a: string }) => {
   );
 };
 
-/* ── Star Rating ──────────────────────────────────────────── */
-const StarRating = ({ label }: { label: string }) => {
-  const [rating, setRating] = useState(0);
-  const [hover, setHover] = useState(0);
-  return (
-    <div className="space-y-1">
-      <p className="font-heading font-semibold text-sm">{label}</p>
-      <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map((s) => (
-          <button
-            key={s}
-            onClick={() => setRating(s)}
-            onMouseEnter={() => setHover(s)}
-            onMouseLeave={() => setHover(0)}
-            className="transition-transform hover:scale-110"
-            data-testid={`star-${label.slice(0, 6)}-${s}`}
-          >
-            <Star
-              className="w-7 h-7"
-              fill={(hover || rating) >= s ? "currentColor" : "none"}
-              style={{ color: (hover || rating) >= s ? "hsl(var(--primary))" : "hsl(var(--border))" }}
-            />
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-};
-
 /* ── Main Contact Section ─────────────────────────────────── */
 const ContactSection = () => {
   const [faqSearch, setFaqSearch] = useState("");
   const [contactSent, setContactSent] = useState(false);
   const [reportSent, setReportSent] = useState(false);
   const [suggestionSent, setSuggestionSent] = useState(false);
-  const [surveySent, setSurveySent] = useState(false);
   const [newsletterSent, setNewsletterSent] = useState(false);
 
   const filteredFaqs = FAQS.filter(
@@ -391,44 +354,6 @@ const ContactSection = () => {
         </div>
       </section>
 
-      {/* ── 6. Department Directory ────────────────────────── */}
-      <section className="py-20 px-6 bg-muted/30">
-        <div className="container mx-auto">
-          <motion.h3
-            className="font-heading text-4xl font-black mb-10"
-            initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp}
-          >
-            Department Directory
-          </motion.h3>
-          <motion.div
-            className="grid md:grid-cols-2 gap-6"
-            initial="hidden" whileInView="show" viewport={{ once: true }} variants={stagger}
-          >
-            {DEPARTMENTS.map(({ name, icon: Icon, phone, email, desc }) => (
-              <motion.div key={name} variants={fadeUp} className="brutal-card p-6 rounded-lg">
-                <div className="flex items-start gap-4">
-                  <div className="bg-primary w-12 h-12 brutal-border rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-6 h-6 text-primary-foreground" />
-                  </div>
-                  <div className="min-w-0">
-                    <h4 className="font-heading font-black text-lg mb-1">{name}</h4>
-                    <p className="text-sm text-muted-foreground mb-3">{desc}</p>
-                    <div className="flex flex-col gap-1">
-                      <a href={`tel:${phone.replace(/\D/g, "")}`} className="font-heading font-bold text-sm inline-flex items-center gap-1 hover:text-secondary transition-colors">
-                        <Phone className="w-4 h-4" /> {phone}
-                      </a>
-                      <a href={`mailto:${email}`} className="font-heading font-bold text-sm inline-flex items-center gap-1 hover:text-secondary transition-colors">
-                        <Mail className="w-4 h-4" /> {email}
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
       {/* ── 7. FAQ Accordion ──────────────────────────────── */}
       <section className="py-20 px-6">
         <div className="container mx-auto max-w-3xl">
@@ -558,54 +483,6 @@ const ContactSection = () => {
               )}
             </motion.div>
           </div>
-        </div>
-      </section>
-
-      {/* ── 9. Feedback Survey ────────────────────────────── */}
-      <section className="py-20 px-6">
-        <div className="container mx-auto max-w-2xl">
-          <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp}>
-            <h3 className="font-heading text-4xl font-black mb-2">Quick Feedback</h3>
-            <p className="text-muted-foreground mb-8">3 questions. 30 seconds. Helps us improve.</p>
-          </motion.div>
-          {surveySent ? (
-            <motion.div
-              className="brutal-card p-10 rounded-lg text-center space-y-4"
-              initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-            >
-              <CheckCircle className="w-16 h-16 mx-auto text-primary" />
-              <h4 className="font-heading text-2xl font-black">Thank you!</h4>
-              <p className="text-muted-foreground">Your feedback makes LibraVault better for everyone.</p>
-            </motion.div>
-          ) : (
-            <motion.form
-              className="brutal-card p-8 rounded-lg space-y-8"
-              initial="hidden" whileInView="show" viewport={{ once: true }} variants={stagger}
-              onSubmit={(e) => { e.preventDefault(); setSurveySent(true); }}
-            >
-              <motion.div variants={fadeUp}>
-                <StarRating label="How satisfied are you with LibraVault overall?" />
-              </motion.div>
-              <motion.div variants={fadeUp}>
-                <StarRating label="How easy was it to find the book you wanted?" />
-              </motion.div>
-              <motion.div variants={fadeUp}>
-                <StarRating label="How likely are you to recommend us to a friend?" />
-              </motion.div>
-              <motion.div variants={fadeUp}>
-                <label className="font-heading font-bold text-sm mb-1 block">Anything else? (optional)</label>
-                <textarea rows={3} placeholder="Your thoughts..." className="brutal-input w-full rounded-md resize-none" data-testid="textarea-survey-comment" />
-              </motion.div>
-              <motion.button
-                variants={fadeUp}
-                type="submit"
-                className="brutal-btn bg-primary text-primary-foreground rounded-md font-heading w-full"
-                data-testid="button-survey-submit"
-              >
-                Submit Feedback
-              </motion.button>
-            </motion.form>
-          )}
         </div>
       </section>
 
